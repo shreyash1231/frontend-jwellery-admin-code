@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { getDetailsApi, updateDetailsApi, addDetailsApi } from "../../common/services";
-import { message } from 'antd';
 import { errorResponseHandler } from "../../common/http";
 import Load from "../Load/Load";
 import { useToast } from "../toast/Toast";

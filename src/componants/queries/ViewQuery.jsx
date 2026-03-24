@@ -1,4 +1,3 @@
-import { errorResponseHandler } from "../../common/http";
 
 const ViewQuery = ({ showViewQuery, setShowViewQuery, query }) => {
   const closeViewModal = () => {
@@ -7,17 +6,6 @@ const ViewQuery = ({ showViewQuery, setShowViewQuery, query }) => {
 
   if (!query) return null;
 
-  const formatDate = (value) => {
-    if (!value) return "-";
-    try {
-      const d = new Date(value);
-      return isNaN(d.getTime())
-        ? "-"
-        : d.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" });
-    } catch (err) {
-      errorResponseHandler(err)
-    }
-  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50" style={{ zIndex: 9999999 }}>

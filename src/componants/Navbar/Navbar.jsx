@@ -4,10 +4,7 @@ import {
   faBars,
   faUserCircle,
   faSignOutAlt,
-  faKey,
-  faUser,
 } from "@fortawesome/free-solid-svg-icons";
-import { message } from "antd";
 import Loader from "../Loader/Loader";
 
 import UpdateProfile from "./Update Admin Profile/UpdateProfile";
@@ -23,8 +20,6 @@ const Navbar = ({ toggleSidenav, isSidenavOpen }) => {
   const [openUpdateProfile, setOpenUpdateProfile] = useState(false);
   const [openChangePassword, setOpenChangePassword] = useState(false);
   const dropdownRef = useRef(null);
-  const adminToken = sessionStorage.getItem("adminToken");
-  const isAdminAuthenticated = Boolean(adminToken); 
   const message=useToast();
 
 
@@ -59,16 +54,6 @@ const Navbar = ({ toggleSidenav, isSidenavOpen }) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleUpdateAdmin = () => {
-    setOpenUpdateProfile(true);
-    setIsDropdownOpen(false);
-  };
-
-  const handleChangePassword = () => {
-    setOpenChangePassword(true);
-    setIsDropdownOpen(false);
   };
 
   return (

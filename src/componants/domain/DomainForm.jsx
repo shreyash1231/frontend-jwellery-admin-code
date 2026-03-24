@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { message } from "antd";
 import { addDomainApi, updateDomainApi } from "../../common/services";
 import { errorResponseHandler } from "../../common/http";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

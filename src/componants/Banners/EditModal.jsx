@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { updateBannerApi } from "../../common/services";
 import { errorResponseHandler } from "../../common/http";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form,ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { message } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import { useToast } from "../toast/Toast";

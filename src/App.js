@@ -25,7 +25,6 @@ import Products from "./componants/project/Projects";
 import Reels from "./componants/Reels/Reels";
 import Users from "./componants/Users/Users";
 import UserInfo from "./componants/userInfo/UserInfo";
-import Signatures from "./componants/Signatures/Signatures";
 import Orders from "./componants/Orders/Orders";
 import CustomOrders from "./componants/CustomOrders/CustomOrders";
 import Payments from "./componants/Payments/Payments";
@@ -34,9 +33,6 @@ import Coupons from "./componants/Coupons/Coupons";
 
 const Home = lazy(() => import("./componants/Home/Home"));
 const Profile = lazy(() => import("./componants/Profile/Profile"));
-const UserManagement = lazy(
-  () => import("./componants/userManagement/UserManagement"),
-);
 const About = lazy(() => import("./componants/AboutUs/AboutUs"));
 const Privacy = lazy(() => import("./componants/Privacy Policies/Privacy"));
 const Terms = lazy(() => import("./componants/Terms & Condition/Terms"));

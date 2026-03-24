@@ -84,8 +84,6 @@ const endpoints = {
   getAllOrders: "get-all-orders",
   updateOrder: "update-status",
 
-  getAllPayments:"get-all-payments",
-
 
  
 

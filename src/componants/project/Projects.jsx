@@ -2,16 +2,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { AiOutlineEye } from 'react-icons/ai';
 import { CiEdit } from 'react-icons/ci';
 import { AiFillDelete } from 'react-icons/ai';
-import { message, Pagination } from 'antd';
+import { Pagination } from 'antd';
 import Load from '../Load/Load';
 import DeleteModal from '../deleteModal/DeleteModal';
 import ProductForm from './ProjectForm';
 import ProductView from './ProjectView';
 import {
-  addProjectApi,
   deleteProjectApi,
   getAllProjectsApi,
-  updateProjectApi,
 } from '../../common/services';
 import { errorResponseHandler } from '../../common/http';
 import { useToast } from '../toast/Toast';

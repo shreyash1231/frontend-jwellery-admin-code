@@ -3,7 +3,6 @@ import { updateCouponApi } from "../../common/services";
 import { errorResponseHandler } from "../../common/http";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { message } from "antd";
 import { useToast } from "../toast/Toast";
 
 const validationSchema = Yup.object().shape({

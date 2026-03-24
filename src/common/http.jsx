@@ -1,6 +1,5 @@
 import { message } from "antd";
 import { baseUrl, showConsole } from "./env";
-import { Navigate } from "react-router";
 import axios from "axios";
 
 // SECURITY: Utility to sanitize HTML to prevent XSS

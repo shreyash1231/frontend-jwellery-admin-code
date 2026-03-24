@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React,{ useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Load from "../Load/Load";
 import * as Yup from "yup";
@@ -10,14 +10,12 @@ import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 import {
   login,
-  sendOtp,
   forgotPasswordApi,
   verifyOtp,
   resetPassword,
 } from "../../common/services";
 import { errorResponseHandler } from "../../common/http";
 import { useToast } from "../toast/Toast";
-import { image_url } from "../../common/env";
 
 const Login = () => {
   const [redirect, setRedirect] = useState(0);
@@ -53,10 +51,6 @@ const Login = () => {
     };
   }, [navigate]);
 
-  const handleForgetPassword = () => {
-    setRedirect(1);
-    return;
-  };
 
   const initialValues = {
     email: "",
@@ -542,7 +536,6 @@ const Login = () => {
                 </div>
 
                 <div className=" text-blue-600 w-40 mb-2 ">
-                  <a variant="small" color="blue-gray">
                     <button
                       type="button"
                       className="font-medium hover:text-orange-900 underline"
@@ -552,7 +545,6 @@ const Login = () => {
                     >
                       {timer > 0 ? `Resend in : ${timer} s` : "Resend OTP"}
                     </button>
-                  </a>
                 </div>
 
                 <button

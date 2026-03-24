@@ -3,7 +3,6 @@ import { updateReelApi } from "../../common/services";
 import { errorResponseHandler } from "../../common/http";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { message } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import { useToast } from "../toast/Toast";
@@ -20,14 +19,6 @@ function EditModal({ onClose, fetchReels, selectedReel }) {
   const [imageFile, setImageFile] = useState(null);
   const message=useToast();
 
-  // ================= IMAGE =================
-  const handleImageChange = (e, setFieldValue) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      setFieldValue("image", file);
-    }
-  };
 
   // ================= VIDEO =================
   const handleVideoChange = (e, setFieldValue) => {

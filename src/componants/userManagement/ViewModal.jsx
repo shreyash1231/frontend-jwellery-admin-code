@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import noProfile from "../../Images/noProfile.jpg";
 import { image_url } from "../../common/env";
 
 const ViewAdmin = ({ showViewAdmin, setShowViewAdmin, selectedAdmin }) => {
-  const [open, setOpen] = useState(showViewAdmin);
 
   const closeViewModal = () => {
     setOpen(false);

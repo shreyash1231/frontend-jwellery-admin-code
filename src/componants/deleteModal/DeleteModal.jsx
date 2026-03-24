@@ -1,5 +1,4 @@
-import React,{useState,useEffect} from 'react';
-import { message } from 'antd';
+import React,{useState} from 'react';
 import { errorResponseHandler } from '../../common/http';
 
 const DeleteModal = ({ onClose, handleDelete }) => {

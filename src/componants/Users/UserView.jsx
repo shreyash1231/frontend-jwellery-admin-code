@@ -13,21 +13,6 @@ const UserView = ({ onClose, selectedUser }) => {
     return "-";
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "-";
-    try {
-      return new Date(dateString).toLocaleDateString("en-IN", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch (e) {
-      return dateString;
-    }
-  };
-
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-2 z-50">
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-[600px] max-h-[700px] flex flex-col overflow-hidden">

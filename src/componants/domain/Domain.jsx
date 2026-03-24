@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { AiOutlineEye } from "react-icons/ai";
 import { CiEdit } from "react-icons/ci";
 import { AiFillDelete } from "react-icons/ai";
-import { message, Pagination } from "antd";
+import { Pagination } from "antd";
 import Load from "../Load/Load";
 import DeleteModal from "../deleteModal/DeleteModal";
 import DomainView from "./DomainView";

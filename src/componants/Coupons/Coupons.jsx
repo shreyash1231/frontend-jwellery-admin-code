@@ -3,7 +3,7 @@ import { getAllCouponsApi, deleteCouponApi } from "../../common/services";
 import { CiEdit } from "react-icons/ci";
 import { AiFillDelete } from "react-icons/ai";
 import { AiOutlineEye } from "react-icons/ai";
-import { message, Pagination } from "antd";
+import { Pagination } from "antd";
 import EditModal from "./EditModal";
 import DeleteModal from "../deleteModal/DeleteModal";
 import AddModal from "./AddModal";

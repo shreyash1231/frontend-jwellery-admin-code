@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { message } from "antd";
+import React, { useState, useEffect, useCallback } from "react";
 import { changePassword } from "../../common/services";
 import Load from "../Load/Load";
 import Modal from "react-modal";
@@ -35,58 +34,55 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const message = useToast();
 
-  const adminProfile = async () => {
-    setLoading(true);
-    try {
-      setLoading(true);
-      if (!sessionStorage.getItem("token")) {
-        return;
-      }
 
-      const response = "";
-      //    await getProfile()
-      if (response?.data?.success) {
-        setProfile(response?.data?.data);
-        setProfileFormData({
-          firstName: response?.data?.data?.firstName,
-          lastName: response?.data?.data?.lastName,
-          profileImage: response?.data?.data?.profileImage,
-        });
-      }
-    } catch (error) {
-      if (
-        error.message === "Network Error" ||
-        error.message.includes("ERR_INTERNET_DISCONNECTED")
-      ) {
-        message.error("Network Error");
-        return;
-      }
-      // Handle specific error cases
-      if (error?.response?.status === 401) {
-        window.alert(
-          "Your account is logged in to another device, please login again !",
-        );
-        sessionStorage.removeItem("token");
-        window.location.href = "/admin/login";
-      }
-      if (error?.response?.status === 500) {
-        message.error("Server not responding");
-        return;
-      } else {
-        return;
-      }
-    } finally {
-      setLoading(false);
+const adminProfile = useCallback(async () => {
+  setLoading(true);
+  try {
+    if (!sessionStorage.getItem("token")) {
+      return;
     }
-  };
+    const response = "";
+    // await getProfile()
+    if (response?.data?.success) {
+      setProfile(response?.data?.data);
+      setProfileFormData({
+        firstName: response?.data?.data?.firstName,
+        lastName: response?.data?.data?.lastName,
+        profileImage: response?.data?.data?.profileImage,
+      });
+    }
+  } catch (error) {
+    if (
+      error.message === "Network Error" ||
+      error.message.includes("ERR_INTERNET_DISCONNECTED")
+    ) {
+      message.error("Network Error");
+      return;
+    }
+    if (error?.response?.status === 401) {
+      window.alert("Your account is logged in to another device, please login again !");
+      sessionStorage.removeItem("token");
+      window.location.href = "/admin/login";
+    }
+    if (error?.response?.status === 500) {
+      message.error("Server not responding");
+      return;
+    } else {
+      return;
+    }
+  } finally {
+    setLoading(false);
+  }
+}, [message]);  // ← message is the only external dependency
 
   useEffect(() => {
     adminProfile();
-  }, []);
+  }, [adminProfile]);
 
   const handleProfileImageChange = (e) => {
     setAdminProfileImage(e.target.files[0]);
   };
+  console.log(adminProfileImage);
 
   const handleProfileChange = (e) => {
     setProfileFormData({ ...profileFormData, [e.target.name]: e.target.value });
@@ -240,8 +236,6 @@ const Profile = () => {
 
   return (
     <>
-      <h2 className="text-2xl font-bold mt-2 ml-2"></h2>
-
       <div className="bg-gradient-to-r from-teal-400 to-blue-200 text-black  p-6 h-2/5 w-3/5 rounded-lg shadow-2xl mt-36 ml-48 lg:h-auto max-xl:h-auto">
         <div className="flex items-center w-full xl:w-full">
           <img

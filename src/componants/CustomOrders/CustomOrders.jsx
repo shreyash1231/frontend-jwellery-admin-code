@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { AiOutlineEye } from "react-icons/ai";
-import { Input, Pagination, Select, message } from "antd";
+import { Input, Pagination, Select} from "antd";
 
 import { customOrderApi, updateCustomOrderStatusApi } from "../../common/services";
 import { errorResponseHandler } from "../../common/http";

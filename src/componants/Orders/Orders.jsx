@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getAllOrdersApi, updateOrderApi } from "../../common/services";
 import { AiOutlineEye } from "react-icons/ai";
-import { message, Pagination, Input, Select } from "antd";
+import { Pagination, Input, Select } from "antd";
 import OrderView from "./OrderView";
 import { errorResponseHandler } from "../../common/http";
 import Load from "../Load/Load";

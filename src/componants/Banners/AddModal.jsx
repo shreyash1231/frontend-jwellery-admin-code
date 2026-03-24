@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { addBannerApi } from "../../common/services";
 import { errorResponseHandler } from "../../common/http";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import { useToast } from "../toast/Toast";
-import { image_url } from "../../common/env";
+
 
 const validationSchema = Yup.object().shape({
   image: Yup.mixed().required("Image file is required"),

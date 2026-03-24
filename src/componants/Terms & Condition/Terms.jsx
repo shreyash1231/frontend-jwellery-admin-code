@@ -1,17 +1,13 @@
-import { useContext, useEffect, useState } from "react";
-import { sanitizeHTML } from '../../common/http';
+import { useEffect, useState } from "react";
 import "react-quill/dist/quill.snow.css";
 import Load from "../Load/Load";
 import ReactQuill from "react-quill";
 
 import { staticContent, updateContent, createContent } from "../../common/services";
-import { message } from "antd";
-import { useNavigate } from "react-router";
 import { errorResponseHandler } from "../../common/http";
 import { useToast } from "../toast/Toast";
 
 const Terms = () => {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState({});
   const [text, setText] = useState("");

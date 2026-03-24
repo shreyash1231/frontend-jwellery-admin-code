@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { RiLogoutBoxLine } from "react-icons/ri";
 import { message } from "antd";
-import { FaUsers, FaHandsHelping } from "react-icons/fa";
-import { FaStarOfDavid } from "react-icons/fa6";
+import { FaUsers} from "react-icons/fa";
 import { SiGooglebigquery } from "react-icons/si";
 import { FaRegNewspaper } from "react-icons/fa6";
 import { MdOutlineDomain } from "react-icons/md";
@@ -13,21 +11,13 @@ import { MdDashboardCustomize } from "react-icons/md";
 
 
 import {
-  MdDashboard,
-  MdPerson,
   MdPolicy,
   MdInfo,
   MdGavel,
-  MdDesignServices,
   MdLocalShipping,
   MdSwapHoriz,
 } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
-import { FaCarSide } from "react-icons/fa";
 import { MdInventory2 } from "react-icons/md";
-import { BsTools } from "react-icons/bs";
-import { MdMiscellaneousServices } from "react-icons/md";
-import { BiSolidOffer } from "react-icons/bi";
 import Loader from "../Loader/Loader";
 import { errorResponseHandler } from "../../common/http";
 import { MdOutlinePayments } from "react-icons/md";
@@ -37,12 +27,7 @@ import { GiKnightBanner } from "react-icons/gi";
 const Sidenav = React.memo(({ isOpen }) => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [isFaqDropdownOpen, setIsFaqDropdownOpen] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
-  const opneLogoutModal = () => {
-    setShowLogoutModal(true);
-  };
+  const location = useLocation();;
 
   const handleLogout = async () => {
     setLoading(true);
@@ -58,10 +43,6 @@ const Sidenav = React.memo(({ isOpen }) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const toggleFaqDropDown = () => {
-    setIsFaqDropdownOpen(!isFaqDropdownOpen);
   };
 
   return (
