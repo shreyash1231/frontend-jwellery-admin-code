@@ -1,0 +1,48 @@
+.loader-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Darker transparent background for elegance */
+    z-index: 9999;
+  }
+  
+  .loader {
+    display: flex;
+    gap: 10px; /* Space between dots */
+  }
+  
+.loader span {
+  width: 20px;
+  height: 20px;
+  background-color: #1d2532; /* Correct loader color */
+  border-radius: 50%;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+  
+  .loader span:nth-child(1) {
+    animation-delay: 0s;
+  }
+  .loader span:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .loader span:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+  
+  @keyframes pulse {
+    0%, 80%, 100% {
+      transform: scale(0); /* Start and end at zero size */
+      opacity: 0.5;       /* Slightly transparent */
+    }
+    40% {
+      transform: scale(1); /* Expand fully */
+      opacity: 1;          /* Fully opaque */
+    }
+  }
+  

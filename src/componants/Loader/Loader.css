@@ -1,0 +1,87 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: Arial, sans-serif;
+  }
+  
+ 
+  .app {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  
+  .heart-loader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 160px; 
+    height: 80px; 
+    transform: rotate(45deg);
+  }
+  
+
+  .heart {
+    width: 40px;
+    height: 40px;
+    background-color: rgb(83, 24, 24);  
+    position: relative;
+    animation: heart-beat 1s infinite ease-in-out;
+    transform-origin: center center;
+  }
+
+  .heart-left {
+    transform: rotate(90deg); 
+    margin-right: -5px;  
+  }
+  
+ 
+  .heart-right {
+    transform: rotate(-45deg); 
+    margin-left: 10px; 
+    margin-top:  -30px;
+  }
+  
+
+  .heart::before,
+  .heart::after {
+    content: '';
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background-color: rgb(83, 24, 24);  
+    border-radius: 50%;
+  }
+  
+  .heart::before {
+    left: 0;  
+    top: -20px;
+  }
+  
+  .heart::after {
+    left: -20px;
+    top: 0;
+  }
+  
+ 
+  @keyframes heart-beat {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.2);
+      opacity: 0.6;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1; 
+    }
+  }
