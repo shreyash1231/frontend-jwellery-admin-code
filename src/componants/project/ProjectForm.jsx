@@ -334,7 +334,6 @@ const handleChange = (e) => {
               <input
                 type="number"
                 name="quantity"
-                disabled={mode === "edit"}
                 value={form.quantity}
                 onChange={handleChange}
                 className="border border-gray-900 p-2 w-full"
