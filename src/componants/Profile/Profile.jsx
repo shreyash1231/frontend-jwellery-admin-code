@@ -62,7 +62,7 @@ const adminProfile = useCallback(async () => {
     if (error?.response?.status === 401) {
       window.alert("Your account is logged in to another device, please login again !");
       sessionStorage.removeItem("token");
-      window.location.href = "/admin/login";
+      window.location.href = "/login";
     }
     if (error?.response?.status === 500) {
       message.error("Server not responding");
