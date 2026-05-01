@@ -52,7 +52,7 @@ function App() {
   };
 
   return (
-    <Router>
+    <Router basename="/admin">
       <UserContext.Provider value={{ setIsAuthenticated, isAuthenticated }}>
         <Suspense
           fallback={
