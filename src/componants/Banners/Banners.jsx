@@ -39,7 +39,9 @@ const Banners = () => {
       setLoading(false);
     }
   };
-
+const isVideoFile = (url) => {
+  return /\.(mp4|webm|ogg|mov|avi|mkv)$/i.test(url);
+};
   const handleDelete = async (id) => {
     try {
       const response = await deleteBannerApi(id);
@@ -86,7 +88,7 @@ const Banners = () => {
     disabled:hover:bg-[#1d2532]
   "
           onClick={() => setAddModal(true)}
-          disabled={currentBanners.length >= 1}
+          disabled={currentBanners.length >= 15}
         >
           Add Banner
         </button>
@@ -131,13 +133,25 @@ const Banners = () => {
                   <td className="py-2 px-4 border-b">
                     {(currentPage - 1) * pageSize + index + 1}
                   </td>
-                  <td className="py-2 px-4 border-b">
-                    <img
-                      src={`${image_url}/${item.imageUrl}`}
-                      alt="Banner"
-                      className="w-20 h-20 object-cover rounded-md mx-auto"
-                    />
-                  </td>
+                <td className="py-2 px-4 border-b">
+  {isVideoFile(item.imageUrl) ? (
+    <video
+      autoPlay
+      muted
+      loop
+      playsInline
+      className="w-20 h-20 object-cover rounded-md mx-auto"
+    >
+      <source src={`${image_url}/${item.imageUrl}`} />
+    </video>
+  ) : (
+    <img
+      src={`${image_url}/${item.imageUrl}`}
+      alt="Banner"
+      className="w-20 h-20 object-cover rounded-md mx-auto"
+    />
+  )}
+</td>
                   <td className="py-2 px-4 border-b">
                     {new Date(item.createdAt).toLocaleDateString("en-IN", {
                       year: "numeric",

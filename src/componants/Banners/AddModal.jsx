@@ -7,36 +7,42 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import { useToast } from "../toast/Toast";
 
-
 const validationSchema = Yup.object().shape({
-  image: Yup.mixed().required("Image file is required"),
+  file: Yup.mixed().required("File is required"),
 });
 
 function AddModal({ onClose, fetchBanners }) {
   const [submitting, setSubmitting] = useState(false);
-  const [imageFile, setImageFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const message = useToast();
 
-  const handleImageChange = (e, setFieldValue) => {
+  const handleFileChange = (e, setFieldValue) => {
     const file = e.target.files[0];
+
     if (file) {
-      setImageFile(file);
-      setFieldValue("image", file);
+      setSelectedFile(file);
+      setFieldValue("file", file);
     }
   };
 
   const handleSubmit = async (values, { resetForm }) => {
     setSubmitting(true);
+
     try {
       const formData = new FormData();
-      if (imageFile) formData.append("image", imageFile);
+
+      if (selectedFile) {
+        formData.append("file", selectedFile);
+      }
 
       const res = await addBannerApi(formData);
+
       if (res.success) {
         message.success("Banner added successfully!");
+
         fetchBanners();
         resetForm();
-        setImageFile(null);
+        setSelectedFile(null);
         onClose();
       }
     } catch (err) {
@@ -48,65 +54,80 @@ function AddModal({ onClose, fetchBanners }) {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-2 z-50">
-      <div className="bg-white rounded-2xl shadow-lg w-full max-w-[500px] max-h-[600px] flex flex-col">
+      <div className="bg-white rounded-2xl shadow-lg w-full max-w-[500px] max-h-[650px] flex flex-col">
         <h3 className="text-lg font-bold mb-1 text-center bg-[#1d2532] py-2 text-white">
           Add Banner
         </h3>
 
         <Formik
-          initialValues={{ image: null }}
+          initialValues={{ file: null }}
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
         >
           {({ setFieldValue }) => (
             <Form className="flex-1 overflow-y-auto p-6">
               <div className="grid grid-cols-1 gap-6">
-                {/* Image Upload */}
                 <div>
                   <label className="block mb-2 font-semibold">
-                    Banner Image
+                    Banner Image / Video
                   </label>
+
                   <div
                     className="border-2 border-dashed border-gray-900 p-6 rounded-md text-center cursor-pointer hover:bg-gray-50 transition"
                     onClick={() =>
-                      document.getElementById("imageInput").click()
+                      document.getElementById("fileInput").click()
                     }
                   >
                     <FontAwesomeIcon
                       icon={faUpload}
                       className="text-3xl text-gray-600 mb-2"
                     />
+
                     <p className="text-gray-700 font-semibold">
-                      Click to upload image
+                      Click to upload image or video
                     </p>
+
                     <p className="text-gray-500 text-sm">
-                      JPG, PNG, WEBP supported
+                      All image and video formats supported
                     </p>
 
-                    {imageFile && (
-                      <div className="mt-3">
-                        <img
-                          src={URL.createObjectURL(imageFile)} // local preview
-                          alt=""
-                        />
+                    {selectedFile && (
+                      <div className="mt-4">
+                        {selectedFile.type.startsWith("image/") ? (
+                          <img
+                            src={URL.createObjectURL(selectedFile)}
+                            alt="Preview"
+                            className="max-h-48 mx-auto rounded-md object-contain"
+                          />
+                        ) : (
+                          <video
+                            controls
+                            className="max-h-48 mx-auto rounded-md"
+                          >
+                            <source
+                              src={URL.createObjectURL(selectedFile)}
+                              type={selectedFile.type}
+                            />
+                          </video>
+                        )}
 
-                        <p className="text-green-600 text-sm mt-1">
-                          🖼️ {imageFile.name}
+                        <p className="text-green-600 text-sm mt-2 break-all">
+                          {selectedFile.name}
                         </p>
                       </div>
                     )}
                   </div>
 
                   <input
-                    id="imageInput"
+                    id="fileInput"
                     type="file"
-                    accept="image/*"
-                    onChange={(e) => handleImageChange(e, setFieldValue)}
+                    accept="image/*,video/*"
+                    onChange={(e) => handleFileChange(e, setFieldValue)}
                     className="hidden"
                   />
 
                   <ErrorMessage
-                    name="image"
+                    name="file"
                     component="div"
                     className="text-red-500 text-sm mt-1"
                   />
@@ -121,6 +142,7 @@ function AddModal({ onClose, fetchBanners }) {
                 >
                   Close
                 </button>
+
                 <button
                   type="submit"
                   disabled={submitting}
