@@ -19,7 +19,9 @@ const OrderView = ({ onClose, selectedOrder }) => {
     }
   };
 
-  const address = selectedOrder.addressId || {};
+  const address = selectedOrder.shippingAddress || selectedOrder.addressId || {};
+  const customerEmail =
+    selectedOrder.userId?.email || selectedOrder.guestContact?.email || "-";
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-2 z-50">
@@ -61,7 +63,7 @@ const OrderView = ({ onClose, selectedOrder }) => {
               </h4>
               <p>
                 <span className="text-gray-500">Email:</span>{" "}
-                {selectedOrder.userId?.email || "-"}
+                {customerEmail}
               </p>
               <p>
                 <span className="text-gray-500">Name:</span> {address.firstName}{" "}
