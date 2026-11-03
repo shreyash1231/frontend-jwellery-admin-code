@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { addDomainApi, updateDomainApi } from "../../common/services";
 import { errorResponseHandler } from "../../common/http";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -6,11 +6,16 @@ import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import { useToast } from "../toast/Toast";
 import { image_url } from "../../common/env";
 
+// parentCategory may come back populated ({ _id, name }) or as a plain id
+export const getParentId = (item) =>
+  item?.parentCategory?._id || item?.parentCategory || "";
+
 const DomainForm = ({
   mode = "add",
   onClose,
   initialDomain = null,
   onSaved,
+  categories = [],
 }) => {
   const isEdit = mode === "edit";
 
@@ -18,7 +23,27 @@ const DomainForm = ({
     name: "",
     description: "",
     isShopByProduct: false,
+    parentCategory: "",
   });
+
+  // A category can't be its own parent, nor sit under one of its own children
+  const parentOptions = useMemo(() => {
+    const selfId = initialDomain?._id || initialDomain?.id;
+    if (!isEdit || !selfId) return categories;
+
+    const blocked = new Set([selfId]);
+    let added = true;
+    while (added) {
+      added = false;
+      for (const c of categories) {
+        if (!blocked.has(c._id) && blocked.has(getParentId(c))) {
+          blocked.add(c._id);
+          added = true;
+        }
+      }
+    }
+    return categories.filter((c) => !blocked.has(c._id));
+  }, [categories, initialDomain, isEdit]);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [logoFile, setLogoFile] = useState(null);
@@ -41,6 +66,7 @@ const DomainForm = ({
           initialDomain?.detail ||
           "",
         isShopByProduct: initialDomain?.isShopByProduct || false,
+        parentCategory: getParentId(initialDomain),
       });
 
       const img =
@@ -55,7 +81,7 @@ const DomainForm = ({
       setLogoPreview(logo);
       setLogoFile(null);
     } else {
-      setForm({ name: "", description: "", isShopByProduct: false });
+      setForm({ name: "", description: "", isShopByProduct: false, parentCategory: "" });
       setImagePreview("");
       setImageFile(null);
       setLogoPreview("");
@@ -110,6 +136,8 @@ const DomainForm = ({
       fd.append("name", form.name);
       fd.append("description", form.description);
       fd.append("isShopByProduct", form.isShopByProduct);
+      // empty string = top-level category (backend stores it as null)
+      fd.append("parentCategory", form.parentCategory);
 
       if (imageFile) fd.append("image", imageFile);
       if (logoFile) fd.append("logo", logoFile);
@@ -129,7 +157,7 @@ const DomainForm = ({
         }
       }
 
-      setForm({ name: "", description: "", isShopByProduct: false });
+      setForm({ name: "", description: "", isShopByProduct: false, parentCategory: "" });
       setImageFile(null);
       setImagePreview("");
       setLogoFile(null);
@@ -272,6 +300,27 @@ const DomainForm = ({
               onChange={handleChange}
               placeholder="Enter description"
             />
+          </div>
+
+          <div>
+            <label className="block mb-1">Parent Category (Optional)</label>
+            <select
+              name="parentCategory"
+              className="border border-gray-900 p-2 w-full"
+              value={form.parentCategory}
+              onChange={handleChange}
+            >
+              <option value="">None (top-level category)</option>
+              {parentOptions.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-sm text-gray-500 mt-1">
+              Pick a parent to show this category inside it on the website,
+              e.g. "Birthday" inside "Gift Item".
+            </p>
           </div>
 
           <div className="flex items-center gap-2">

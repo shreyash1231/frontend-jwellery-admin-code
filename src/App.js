@@ -30,6 +30,7 @@ import CustomOrders from "./componants/CustomOrders/CustomOrders";
 import Payments from "./componants/Payments/Payments";
 import Banners from "./componants/Banners/Banners";
 import Coupons from "./componants/Coupons/Coupons";
+import Marquee from "./componants/Marquee/Marquee";
 
 const Home = lazy(() => import("./componants/Home/Home"));
 const Profile = lazy(() => import("./componants/Profile/Profile"));
@@ -112,6 +113,7 @@ const AuthenticatedApp = ({ isOpen, toggleSidenav }) => {
           {/* <Route path="/signature" element={<Signatures />} /> */}
           <Route path="/banners" element={<Banners />} />
           <Route path="/coupons" element={<Coupons />} />
+          <Route path="/marquee" element={<Marquee />} />
 
           {/* <Route path="/faqs" element={<Faqs />} /> */}
 

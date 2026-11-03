@@ -5,6 +5,12 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useToast } from "../toast/Toast";
 
+// Blank optional number inputs arrive as "" — treat them as "not set"
+const optionalNumber = () =>
+  Yup.number()
+    .transform((value, original) => (original === "" ? null : value))
+    .nullable();
+
 const validationSchema = Yup.object().shape({
   code: Yup.string()
     .required("Coupon code is required")
@@ -19,26 +25,28 @@ const validationSchema = Yup.object().shape({
       is: "PERCENT",
       then: (schema) => schema.max(100, "Percentage cannot exceed 100"),
     }),
-  maxDiscount: Yup.number()
+  maxDiscount: optionalNumber()
     .nullable()
     .when("type", {
       is: "PERCENT",
       then: (schema) =>
         schema.positive("Max discount must be positive if provided"),
     }),
-  minOrderValue: Yup.number()
+  minOrderValue: optionalNumber()
     .min(0, "Minimum order value cannot be negative")
     .nullable(),
-  expiresAt: Yup.date().nullable(),
-  usageLimit: Yup.number()
+  expiresAt: Yup.date()
+    .transform((value, original) => (original === "" ? null : value))
+    .nullable(),
+  usageLimit: optionalNumber()
     .positive("Usage limit must be positive")
     .integer("Usage limit must be a whole number")
     .nullable(),
-  perUserLimit: Yup.number()
+  perUserLimit: optionalNumber()
     .positive("Per user limit must be positive")
     .integer("Per user limit must be a whole number")
     .nullable(),
-  // isActive: Yup.boolean(),
+  isActive: Yup.boolean(),
 });
 
 function EditModal({ onClose, fetchCoupons, selectedCoupon }) {
@@ -63,20 +71,22 @@ function EditModal({ onClose, fetchCoupons, selectedCoupon }) {
         value: Number(values.value),
         minOrderValue: values.minOrderValue ? Number(values.minOrderValue) : 0,
         perUserLimit: values.perUserLimit ? Number(values.perUserLimit) : 1,
-        // isActive: values.isActive,
+        isActive: values.isActive,
+        // empty optional fields are sent as null so clearing them removes the limit
+        maxDiscount:
+          values.type === "PERCENT" && values.maxDiscount
+            ? Number(values.maxDiscount)
+            : null,
+        usageLimit: values.usageLimit ? Number(values.usageLimit) : null,
       };
 
-      // Add maxDiscount only for PERCENT type
-      if (values.type === "PERCENT" && values.maxDiscount) {
-        data.maxDiscount = Number(values.maxDiscount);
-      }
-
-      // Add optional fields
-      if (values.expiresAt) {
-        data.expiresAt = new Date(values.expiresAt).toISOString();
-      }
-      if (values.usageLimit) {
-        data.usageLimit = Number(values.usageLimit);
+      // Only send the expiry when it changed, so editing an expired coupon's
+      // other fields isn't blocked by the "date in the past" check
+      const originalExpiry = formatDateLocal(selectedCoupon.expiresAt);
+      if (values.expiresAt !== originalExpiry) {
+        data.expiresAt = values.expiresAt
+          ? new Date(values.expiresAt).toISOString()
+          : null;
       }
 
       const res = await updateCouponApi(
@@ -114,7 +124,7 @@ function EditModal({ onClose, fetchCoupons, selectedCoupon }) {
             expiresAt: formatDateLocal(selectedCoupon.expiresAt),
             usageLimit: selectedCoupon.usageLimit || "",
             perUserLimit: selectedCoupon.perUserLimit || "1",
-            //   isActive: selectedCoupon.isActive !== undefined ? selectedCoupon.isActive : true,
+            isActive: selectedCoupon.isActive !== false,
           }}
           enableReinitialize
           validationSchema={validationSchema}
@@ -316,7 +326,7 @@ function EditModal({ onClose, fetchCoupons, selectedCoupon }) {
                 )}
 
                 {/* Is Active */}
-                {/* <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3">
                   <Field
                     type="checkbox"
                     name="isActive"
@@ -326,10 +336,10 @@ function EditModal({ onClose, fetchCoupons, selectedCoupon }) {
                   <label htmlFor="isActive" className="font-semibold cursor-pointer">
                     Active{" "}
                     <span className="text-gray-500 text-sm font-normal">
-                      (Coupon can be used)
+                      (Untick to pause this coupon without deleting it)
                     </span>
                   </label>
-                </div> */}
+                </div>
               </div>
 
               <div className="flex justify-end p-4 border-t gap-6 mt-6">

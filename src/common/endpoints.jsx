@@ -37,6 +37,10 @@ const endpoints = {
   deleteCoupon:"delete-coupon",
   updateCoupon:"update-coupon",
   getAllCoupons:"get-all-coupons",
+  couponUsage:"coupon-usage",
+
+  getMarquee:"get-marquee",
+  updateMarquee:"update-marquee",
 
 
 

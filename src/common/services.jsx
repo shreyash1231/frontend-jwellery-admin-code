@@ -88,6 +88,18 @@ export const updateCouponApi = async (id, data) => {
   return http.patch(`${endpoints.updateCoupon}/${id}`, data);
 };
 
+export const getCouponUsageApi = async (code) => {
+  return http.get(`${endpoints.couponUsage}/${encodeURIComponent(code)}`);
+};
+
+export const getMarqueeApi = async () => {
+  return http.get(`${endpoints.getMarquee}`);
+};
+
+export const updateMarqueeApi = async (data) => {
+  return http.put(`${endpoints.updateMarquee}`, data);
+};
+
 export const getAllUsersApi = async () => {
   return http.get(`${endpoints.getAllUsers}`);
 };

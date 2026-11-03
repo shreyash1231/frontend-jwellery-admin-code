@@ -1,6 +1,17 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { getCouponUsageApi } from "../../common/services";
+import { errorResponseHandler } from "../../common/http";
 
 function ViewModal({ onClose, selectedCoupon }) {
+  const [usage, setUsage] = useState(null);
+
+  useEffect(() => {
+    if (!selectedCoupon?.code) return;
+    getCouponUsageApi(selectedCoupon.code)
+      .then((res) => res?.success && setUsage(res.data))
+      .catch(errorResponseHandler);
+  }, [selectedCoupon]);
+
   if (!selectedCoupon) return null;
 
   const formatDate = (dateString) => {
@@ -12,15 +23,18 @@ function ViewModal({ onClose, selectedCoupon }) {
     });
   };
 
+  // Coupons are valid until the end of their expiry day
   const isExpired = (expiresAt) => {
     if (!expiresAt) return false;
-    return new Date(expiresAt) < new Date();
+    const end = new Date(expiresAt);
+    end.setHours(23, 59, 59, 999);
+    return end < new Date();
   };
 
   const getStatus = () => {
-    // if (!selectedCoupon.isActive) {
-    //   return { text: "Inactive", color: "text-gray-600", bg: "bg-gray-100" };
-    // }
+    if (selectedCoupon.isActive === false) {
+      return { text: "Inactive", color: "text-gray-600", bg: "bg-gray-100" };
+    }
     if (isExpired(selectedCoupon.expiresAt)) {
       return { text: "Expired", color: "text-red-600", bg: "bg-red-50" };
     }
@@ -126,6 +140,26 @@ function ViewModal({ onClose, selectedCoupon }) {
               </label>
               <p className="border border-gray-300 p-3 rounded-md bg-gray-50 text-gray-700 font-semibold">
                 {selectedCoupon.usedCount || 0}
+              </p>
+            </div>
+          </div>
+
+          {/* Completed orders (paid / COD) that used this coupon */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block mb-2 font-semibold text-gray-800">
+                Completed Orders
+              </label>
+              <p className="border border-gray-300 p-3 rounded-md bg-gray-50 text-gray-700 font-semibold">
+                {usage ? usage.totalOrders : "…"}
+              </p>
+            </div>
+            <div>
+              <label className="block mb-2 font-semibold text-gray-800">
+                Total Discount Given
+              </label>
+              <p className="border border-gray-300 p-3 rounded-md bg-gray-50 text-green-600 font-semibold">
+                {usage ? `₹${usage.totalDiscountGiven.toLocaleString("en-IN")}` : "…"}
               </p>
             </div>
           </div>

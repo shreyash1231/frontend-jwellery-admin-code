@@ -68,19 +68,22 @@ const Coupons = () => {
     });
   };
 
+  // Coupons are valid until the end of their expiry day
   const isExpired = (expiresAt) => {
     if (!expiresAt) return false;
-    return new Date(expiresAt) < new Date();
+    const end = new Date(expiresAt);
+    end.setHours(23, 59, 59, 999);
+    return end < new Date();
   };
 
   const getStatusBadge = (item) => {
-    // if (!item.isActive) {
-    //   return (
-    //     <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-700">
-    //       Inactive
-    //     </span>
-    //   );
-    // }
+    if (item.isActive === false) {
+      return (
+        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-700">
+          Inactive
+        </span>
+      );
+    }
     if (isExpired(item.expiresAt)) {
       return (
         <span className="px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-600">

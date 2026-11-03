@@ -5,6 +5,12 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useToast } from "../toast/Toast";
 
+// Blank optional number inputs arrive as "" — treat them as "not set"
+const optionalNumber = () =>
+  Yup.number()
+    .transform((value, original) => (original === "" ? null : value))
+    .nullable();
+
 const validationSchema = Yup.object().shape({
   code: Yup.string()
     .required("Coupon code is required")
@@ -19,26 +25,28 @@ const validationSchema = Yup.object().shape({
       is: "PERCENT",
       then: (schema) => schema.max(100, "Percentage cannot exceed 100"),
     }),
-  maxDiscount: Yup.number()
+  maxDiscount: optionalNumber()
     .nullable()
     .when("type", {
       is: "PERCENT",
       then: (schema) =>
         schema.positive("Max discount must be positive if provided"),
     }),
-  minOrderValue: Yup.number()
+  minOrderValue: optionalNumber()
     .min(0, "Minimum order value cannot be negative")
     .nullable(),
-  expiresAt: Yup.date().nullable(),
-  usageLimit: Yup.number()
+  expiresAt: Yup.date()
+    .transform((value, original) => (original === "" ? null : value))
+    .nullable(),
+  usageLimit: optionalNumber()
     .positive("Usage limit must be positive")
     .integer("Usage limit must be a whole number")
     .nullable(),
-  perUserLimit: Yup.number()
+  perUserLimit: optionalNumber()
     .positive("Per user limit must be positive")
     .integer("Per user limit must be a whole number")
     .nullable(),
-  // isActive: Yup.boolean(),
+  isActive: Yup.boolean(),
 });
 
 function AddModal({ onClose, fetchCoupons }) {
@@ -52,7 +60,7 @@ function AddModal({ onClose, fetchCoupons }) {
         code: values.code.toUpperCase(),
         type: values.type,
         value: Number(values.value),
-       // isActive: values.isActive,
+        isActive: values.isActive,
       };
 
       // Add optional fields only if they have values
@@ -103,7 +111,7 @@ function AddModal({ onClose, fetchCoupons }) {
             expiresAt: "",
             usageLimit: "",
             perUserLimit: "1",
-            // isActive: true,
+            isActive: true,
           }}
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
@@ -290,7 +298,7 @@ function AddModal({ onClose, fetchCoupons }) {
                 </div>
 
                 {/* Is Active */}
-                {/* <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3">
                   <Field
                     type="checkbox"
                     name="isActive"
@@ -303,7 +311,7 @@ function AddModal({ onClose, fetchCoupons }) {
                       (Coupon can be used immediately)
                     </span>
                   </label>
-                </div> */}
+                </div>
               </div>
 
               <div className="flex justify-end p-4 border-t gap-6 mt-6">

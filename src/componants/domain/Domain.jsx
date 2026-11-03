@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { AiOutlineEye } from "react-icons/ai";
 import { CiEdit } from "react-icons/ci";
 import { AiFillDelete } from "react-icons/ai";
@@ -6,7 +6,7 @@ import { Pagination } from "antd";
 import Load from "../Load/Load";
 import DeleteModal from "../deleteModal/DeleteModal";
 import DomainView from "./DomainView";
-import DomainForm from "./DomainForm";
+import DomainForm, { getParentId } from "./DomainForm";
 import { getDomainsApi, deleteDomainApi } from "../../common/services";
 import { errorResponseHandler } from "../../common/http";
 import { useToast } from "../toast/Toast";
@@ -59,6 +59,16 @@ const Domain = () => {
     fetchDomains();
   }, []);
 
+  const nameById = useMemo(
+    () => Object.fromEntries(domains.map((d) => [d._id, pickName(d)])),
+    [domains],
+  );
+
+  const pickParentName = useCallback(
+    (item) => item?.parentCategory?.name || nameById[getParentId(item)] || "",
+    [nameById],
+  );
+
   /* ================= LOCAL SEARCH ================= */
 
   const filteredDomains = useMemo(() => {
@@ -68,9 +78,10 @@ const Domain = () => {
     return domains.filter((item) => {
       const name = pickName(item).toLowerCase();
       const desc = pickDescription(item).toLowerCase();
-      return name.includes(q) || desc.includes(q);
+      const parent = pickParentName(item).toLowerCase();
+      return name.includes(q) || desc.includes(q) || parent.includes(q);
     });
-  }, [search, domains]);
+  }, [search, domains, pickParentName]);
 
   /* ================= PAGINATION ================= */
 
@@ -152,6 +163,7 @@ const Domain = () => {
           <tr>
             <th className="text-white py-2">S.No</th>
             <th className="text-white py-2">Name</th>
+            <th className="text-white py-2">Parent Category</th>
             <th className="text-white py-2">Description</th>
             <th className="text-white py-2">Shop By Product</th>
             <th className="text-white py-2">Action</th>
@@ -169,6 +181,9 @@ const Domain = () => {
                 </td>
                 <td className="text-center py-2">
                   {pickName(item)}
+                </td>
+                <td className="text-center py-2">
+                  {pickParentName(item) || "-"}
                 </td>
                 <td className="text-center py-2">
                   {trimText(pickDescription(item))}
@@ -191,7 +206,7 @@ const Domain = () => {
             ))
           ) : (
             <tr>
-              <td colSpan="5" className="text-center py-6 text-white">
+              <td colSpan="6" className="text-center py-6 text-white">
                 No categories found
               </td>
             </tr>
@@ -210,13 +225,19 @@ const Domain = () => {
       )}
 
       {showView && (
-        <DomainView showView={showView} setShowView={setShowView} domain={selected} />
+        <DomainView
+          showView={showView}
+          setShowView={setShowView}
+          domain={selected}
+          parentName={pickParentName(selected)}
+        />
       )}
 
       {showForm && (
         <DomainForm
           mode={formMode}
           initialDomain={selected}
+          categories={domains}
           onClose={() => setShowForm(false)}
           onSaved={() => {
             setShowForm(false);

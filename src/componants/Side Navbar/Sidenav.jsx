@@ -23,6 +23,7 @@ import { errorResponseHandler } from "../../common/http";
 import { MdOutlinePayments } from "react-icons/md";
 import { RiCoupon3Fill } from "react-icons/ri";
 import { GiKnightBanner } from "react-icons/gi";
+import { MdCampaign } from "react-icons/md";
 
 const Sidenav = React.memo(({ isOpen }) => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -108,6 +109,20 @@ const Sidenav = React.memo(({ isOpen }) => {
               >
                 <RiCoupon3Fill className="text-xl mr-3" />
                 <span>Coupons</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link
+                to="/marquee"
+                className={`flex items-center p-2 rounded-md transition-colors ${
+                  location.pathname === "/marquee"
+                    ? "bg-[#454546]"
+                    : "hover:bg-[#00000029]"
+                }`}
+              >
+                <MdCampaign className="text-xl mr-3" />
+                <span>Top Marquee</span>
               </Link>
             </li>
 

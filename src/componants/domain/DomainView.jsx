@@ -1,7 +1,7 @@
 import { image_url } from "../../common/env";
 
 // View domain details in a modal
-const DomainView = ({ showView, setShowView, domain }) => {
+const DomainView = ({ showView, setShowView, domain, parentName }) => {
   const close = () => setShowView(false);
 
   const name = domain?.name || domain?.domain_name || domain?.title || "-";
@@ -60,6 +60,16 @@ const DomainView = ({ showView, setShowView, domain }) => {
             <input
               type="text"
               value={name}
+              readOnly
+              className="w-full border border-gray-300 bg-gray-200 px-3 py-2 rounded"
+            />
+          </div>
+
+          <div>
+            <label className="font-semibold">Parent Category</label>
+            <input
+              type="text"
+              value={parentName || "None (top-level)"}
               readOnly
               className="w-full border border-gray-300 bg-gray-200 px-3 py-2 rounded"
             />

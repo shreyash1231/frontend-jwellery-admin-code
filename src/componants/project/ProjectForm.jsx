@@ -376,11 +376,16 @@ const handleChange = (e) => {
               className="border border-gray-900 p-2 w-full"
             >
               <option value="">Select category</option>
-              {categories.map((c) => (
-                <option key={c._id || c.id} value={c._id || c.id}>
-                  {c.name}
-                </option>
-              ))}
+              {categories.map((c) => {
+                const parentName =
+                  c.parentCategory?.name ||
+                  categories.find((p) => p._id === c.parentCategory)?.name;
+                return (
+                  <option key={c._id || c.id} value={c._id || c.id}>
+                    {parentName ? `${parentName} › ${c.name}` : c.name}
+                  </option>
+                );
+              })}
             </select>
           </div>
 
