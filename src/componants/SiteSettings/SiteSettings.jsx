@@ -6,7 +6,7 @@ import { useToast } from "../toast/Toast";
 
 // What the switch controls on the website
 const NEW_FEATURES = [
-  "Top Marquee managed from the admin panel (old fixed announcement text when off)",
+  "Top Marquee managed from the admin panel (old fixed announcement text when off); its admin menu item shows only when on",
   "Sub-categories: hidden from menus and shown inside their parent category page",
   "Discount badges (% OFF) on product cards and product pages",
   "New coupon box at checkout: celebration on apply, inline errors, \"add ₹X more\" hints",
@@ -43,6 +43,10 @@ const SiteSettings = () => {
       const res = await updateSiteSettingsApi({ newFeaturesEnabled: enabled });
       if (res?.success) {
         setSavedEnabled(enabled);
+        // Lets the side menu show/hide the new feature items without a reload
+        window.dispatchEvent(
+          new CustomEvent("site-settings-updated", { detail: { newFeaturesEnabled: enabled } }),
+        );
         message.success(
           enabled ? "New features are now live on the website" : "Website switched back to the old version",
         );

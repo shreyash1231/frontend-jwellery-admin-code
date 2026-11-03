@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { message } from "antd";
 import { FaUsers} from "react-icons/fa";
@@ -20,6 +20,7 @@ import {
 import { MdInventory2 } from "react-icons/md";
 import Loader from "../Loader/Loader";
 import { errorResponseHandler } from "../../common/http";
+import { getSiteSettingsApi } from "../../common/services";
 import { MdOutlinePayments } from "react-icons/md";
 import { RiCoupon3Fill } from "react-icons/ri";
 import { GiKnightBanner } from "react-icons/gi";
@@ -29,6 +30,18 @@ const Sidenav = React.memo(({ isOpen }) => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const location = useLocation();;
+  // Menu items for the new features appear only once they're switched on in Site Settings
+  const [newFeatures, setNewFeatures] = useState(false);
+
+  useEffect(() => {
+    getSiteSettingsApi()
+      .then((res) => setNewFeatures(!!res?.data?.newFeaturesEnabled))
+      .catch(() => setNewFeatures(false));
+
+    const onUpdate = (e) => setNewFeatures(!!e.detail?.newFeaturesEnabled);
+    window.addEventListener("site-settings-updated", onUpdate);
+    return () => window.removeEventListener("site-settings-updated", onUpdate);
+  }, []);
 
   const handleLogout = async () => {
     setLoading(true);
@@ -112,19 +125,21 @@ const Sidenav = React.memo(({ isOpen }) => {
               </Link>
             </li>
 
-            <li>
-              <Link
-                to="/marquee"
-                className={`flex items-center p-2 rounded-md transition-colors ${
-                  location.pathname === "/marquee"
-                    ? "bg-[#454546]"
-                    : "hover:bg-[#00000029]"
-                }`}
-              >
-                <MdCampaign className="text-xl mr-3" />
-                <span>Top Marquee</span>
-              </Link>
-            </li>
+            {newFeatures && (
+              <li>
+                <Link
+                  to="/marquee"
+                  className={`flex items-center p-2 rounded-md transition-colors ${
+                    location.pathname === "/marquee"
+                      ? "bg-[#454546]"
+                      : "hover:bg-[#00000029]"
+                  }`}
+                >
+                  <MdCampaign className="text-xl mr-3" />
+                  <span>Top Marquee</span>
+                </Link>
+              </li>
+            )}
 
             <li>
               <Link
