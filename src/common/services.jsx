@@ -100,6 +100,14 @@ export const updateMarqueeApi = async (data) => {
   return http.put(`${endpoints.updateMarquee}`, data);
 };
 
+export const getSiteSettingsApi = async () => {
+  return http.get(`${endpoints.getSiteSettings}`);
+};
+
+export const updateSiteSettingsApi = async (data) => {
+  return http.put(`${endpoints.updateSiteSettings}`, data);
+};
+
 export const getAllUsersApi = async () => {
   return http.get(`${endpoints.getAllUsers}`);
 };
