@@ -297,19 +297,20 @@ const Login = () => {
           gridTemplateColumns: "50% 50%",
         }}
       >
-        <div
-          style={{
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            background: "#1d2532",
-          }}
-        >
-          <img
-            src={`${bgImage}`}
-            alt=""
-            style={{ width: "90%", margin: "0 auto" }}
+        {/* Full-height photo with the brand over a navy wash */}
+        <div className="relative h-full min-h-screen overflow-hidden" style={{ background: "#1d2532" }}>
+          <img src={`${bgImage}`} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          <div
+            className="absolute inset-0"
+            style={{ background: "linear-gradient(180deg, rgba(29,37,50,0.35) 0%, rgba(29,37,50,0.92) 100%)" }}
           />
+          <div className="absolute bottom-0 left-0 right-0 p-12 text-white">
+            <p className="text-xs tracking-[0.3em] uppercase" style={{ color: "#e3c77a" }}>Admin Panel</p>
+            <h1 className="text-5xl font-bold mt-3">कुछ अलग</h1>
+            <p className="mt-3 text-gray-300 max-w-md">
+              Manage your products, collections, orders and customers in one place.
+            </p>
+          </div>
         </div>
 
         {redirect === 0 && (

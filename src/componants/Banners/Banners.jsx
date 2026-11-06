@@ -11,6 +11,7 @@ import { errorResponseHandler } from "../../common/http";
 import Load from "../Load/Load";
 import { useToast } from "../toast/Toast";
 import { image_url } from "../../common/env";
+import { imgSrc } from "../Collections/CollectionForm";
 
 const Banners = () => {
   const [bannersData, setBannersData] = useState([]);
@@ -146,7 +147,7 @@ const isVideoFile = (url) => {
     </video>
   ) : (
     <img
-      src={`${image_url}/${item.imageUrl}`}
+      src={imgSrc(item.imageUrl, 160)}
       alt="Banner"
       className="w-20 h-20 object-cover rounded-md mx-auto"
     />

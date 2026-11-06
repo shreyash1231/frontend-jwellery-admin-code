@@ -1,0 +1,169 @@
+/* Shared look for every admin page.
+   Pages keep their own markup; this restyles the patterns they all share
+   (dark-header tables, page titles, buttons, inputs, popups) inside .admin-main. */
+
+:root {
+  --brand: #1d2532;
+  --brand-2: #34425a;
+  --gold: #c8a24a;
+  --page: #f5f6f8;
+  --card: #ffffff;
+  --line: #e4e7ec;
+  --line-soft: #f0f1f4;
+  --ink: #101828;
+  --ink-2: #475467;
+  --muted: #98a2b3;
+}
+
+.admin-main {
+  background: var(--page);
+  min-height: 100vh;
+}
+
+/* ---------- Page titles ---------- */
+.admin-main h2.text-2xl.font-bold {
+  color: var(--brand) !important;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Tables (the dark-header list tables used on most pages) ---------- */
+.admin-main table.bg-\[\#1d2532\] {
+  background: var(--card) !important;
+  border: 1px solid var(--line) !important;
+  border-collapse: separate !important;
+  border-spacing: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+}
+
+.admin-main table.bg-\[\#1d2532\] thead th {
+  background: #f8f9fb;
+  color: var(--ink-2) !important;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid var(--line) !important;
+  white-space: nowrap;
+}
+
+.admin-main table.bg-\[\#1d2532\] tbody tr {
+  background: var(--card) !important;
+  transition: background-color 0.15s;
+}
+
+.admin-main table.bg-\[\#1d2532\] tbody tr:hover {
+  background: #f6f8fc !important;
+}
+
+.admin-main table.bg-\[\#1d2532\] tbody td {
+  color: #344054;
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+  border-bottom: 1px solid var(--line-soft) !important;
+}
+
+.admin-main table.bg-\[\#1d2532\] tbody tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+/* "No ... found" rows were white text on the dark table */
+.admin-main table.bg-\[\#1d2532\] td.text-white {
+  color: var(--muted) !important;
+  font-weight: 500 !important;
+  padding: 32px 16px !important;
+}
+
+.admin-main table.bg-\[\#1d2532\] img {
+  border-radius: 8px;
+}
+
+/* ---------- Buttons ---------- */
+.admin-main button.bg-\[\#1d2532\],
+.admin-main a.bg-\[\#1d2532\] {
+  border-radius: 10px !important;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.12);
+  transition: background-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.admin-main button.bg-\[\#1d2532\]:hover:not(:disabled) {
+  background: var(--brand-2) !important;
+  box-shadow: 0 4px 10px rgba(29, 37, 50, 0.22);
+}
+
+.admin-main button.bg-\[\#1d2532\]:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.admin-main button.bg-gray-300,
+.admin-main button.bg-gray-500 {
+  background: #ffffff !important;
+  color: #344054 !important;
+  border: 1px solid #d0d5dd !important;
+  border-radius: 10px !important;
+}
+
+.admin-main button.bg-gray-300:hover,
+.admin-main button.bg-gray-500:hover {
+  background: #f9fafb !important;
+}
+
+.admin-main button.bg-red-600 {
+  border-radius: 10px !important;
+}
+
+/* ---------- Inputs ---------- */
+.admin-main :is(input, textarea, select)[class*="border"]:not([type="checkbox"]):not([type="radio"]):not([type="file"]) {
+  border-color: #d0d5dd !important;
+  border-radius: 8px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.admin-main :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus {
+  outline: none;
+  border-color: var(--brand) !important;
+  box-shadow: 0 0 0 3px rgba(29, 37, 50, 0.12);
+}
+
+.admin-main input[type="checkbox"],
+.admin-main input[type="radio"] {
+  accent-color: var(--brand);
+}
+
+/* ---------- Popups ---------- */
+.admin-main .fixed.inset-0.bg-black.bg-opacity-50,
+.admin-main .fixed.inset-0.bg-gray-800.bg-opacity-50 {
+  backdrop-filter: blur(3px);
+}
+
+.admin-main .fixed.inset-0 > .bg-white {
+  border-radius: 18px !important;
+  box-shadow: 0 24px 60px rgba(16, 24, 40, 0.28) !important;
+}
+
+/* Popup title bars */
+.admin-main .bg-\[\#1d2532\].text-white.text-center {
+  background: linear-gradient(135deg, var(--brand), var(--brand-2)) !important;
+  letter-spacing: 0.01em;
+}
+
+/* A title bar at the top of a rounded popup follows its corners */
+.admin-main .fixed.inset-0 > .bg-white > .bg-\[\#1d2532\]:first-child {
+  border-radius: 18px 18px 0 0;
+}
+
+/* ---------- antd pagination ---------- */
+.admin-main .ant-pagination .ant-pagination-item {
+  border-radius: 8px;
+}
+
+/* ---------- Sidebar scroll ---------- */
+.sidenav-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.sidenav-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+}

@@ -45,6 +45,11 @@ const endpoints = {
   getSiteSettings:"get-site-settings",
   updateSiteSettings:"update-site-settings",
 
+  addCollection:"create-collection",
+  getAllCollections:"get-all-collections",
+  updateCollection:"update-collection",
+  deleteCollection:"delete-collection",
+
 
 
 

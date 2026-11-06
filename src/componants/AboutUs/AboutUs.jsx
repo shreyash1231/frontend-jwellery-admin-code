@@ -83,7 +83,7 @@ const AboutUs = () => {
                 : "hover:bg-gray-700"
             }`}
           >
-            Add About Usasg
+            Add About Us
           </button>
         </div>
       </div>

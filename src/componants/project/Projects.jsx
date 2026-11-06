@@ -13,7 +13,7 @@ import {
 } from '../../common/services';
 import { errorResponseHandler } from '../../common/http';
 import { useToast } from '../toast/Toast';
-import { image_url } from '../../common/env';
+import { imgSrc } from '../Collections/CollectionForm';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -178,7 +178,7 @@ const Products = () => {
                   <td className="py-2 px-4 border-b">
                     {img(p) ? (
                       <img
-                        src={`${image_url}/${img(p)}`}
+                        src={imgSrc(img(p), 160)}
                         alt={p?.title}
                         className="w-10 h-10 rounded object-cover mx-auto border"
                       />

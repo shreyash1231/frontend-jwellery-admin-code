@@ -33,8 +33,9 @@ export const getAllBannersApi = async () => {
   return http.get(`${endpoints.getAllBanners}`);
 };
 
-export const getAnalyticsApi = async () => {
-  return http.get(`${endpoints.analytics}`);
+// range: 7 | 30 | 90 | 365 days, or "all"
+export const getAnalyticsApi = async (range = 30) => {
+  return http.get(`${endpoints.analytics}?range=${range}`);
 };
 
 export const getAboutUsApi = async () => {
@@ -106,6 +107,27 @@ export const getSiteSettingsApi = async () => {
 
 export const updateSiteSettingsApi = async (data) => {
   return http.put(`${endpoints.updateSiteSettings}`, data);
+};
+
+export const getAllCollectionsApi = async () => {
+  return http.get(`${endpoints.getAllCollections}`);
+};
+
+export const addCollectionApi = async (data) => {
+  return http.post(`${endpoints.addCollection}`, data);
+};
+
+export const updateCollectionApi = async (id, data) => {
+  return http.patch(`${endpoints.updateCollection}/${id}`, data);
+};
+
+export const deleteCollectionApi = async (id) => {
+  return http.delete(`${endpoints.deleteCollection}/${id}`);
+};
+
+// The backend pages 40 products at a time by default; the collection picker needs all of them
+export const getAllProductsForPickerApi = async () => {
+  return http.get(`${endpoints.getAllProjects}?limit=1000`);
 };
 
 export const getAllUsersApi = async () => {

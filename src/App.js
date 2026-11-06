@@ -32,6 +32,7 @@ import Banners from "./componants/Banners/Banners";
 import Coupons from "./componants/Coupons/Coupons";
 import Marquee from "./componants/Marquee/Marquee";
 import SiteSettings from "./componants/SiteSettings/SiteSettings";
+import Collections from "./componants/Collections/Collections";
 
 const Home = lazy(() => import("./componants/Home/Home"));
 const Profile = lazy(() => import("./componants/Profile/Profile"));
@@ -96,7 +97,7 @@ const AuthenticatedApp = ({ isOpen, toggleSidenav }) => {
       <Sidenav isOpen={isOpen} />
 
       <div
-        className={`flex-1 transition-all duration-300 ${
+        className={`admin-main flex-1 transition-all duration-300 ${
           isOpen ? "ml-64" : "ml-0"
         }`}
       >
@@ -135,6 +136,7 @@ const AuthenticatedApp = ({ isOpen, toggleSidenav }) => {
           <Route path="/reels" element={<Reels />} />
 
           <Route path="/products" element={<Products />} />
+          <Route path="/collections" element={<Collections />} />
           {/* <Route path="/blogs" element={<Blogs />} /> */}
 
           <Route path="/terms-conditions" element={<Terms />} />
