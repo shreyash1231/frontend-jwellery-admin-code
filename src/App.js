@@ -33,6 +33,7 @@ import Coupons from "./componants/Coupons/Coupons";
 import Marquee from "./componants/Marquee/Marquee";
 import SiteSettings from "./componants/SiteSettings/SiteSettings";
 import Collections from "./componants/Collections/Collections";
+import Discounts from "./componants/Discounts/Discounts";
 
 const Home = lazy(() => import("./componants/Home/Home"));
 const Profile = lazy(() => import("./componants/Profile/Profile"));
@@ -116,6 +117,7 @@ const AuthenticatedApp = ({ isOpen, toggleSidenav }) => {
           <Route path="/banners" element={<Banners />} />
           <Route path="/coupons" element={<Coupons />} />
           <Route path="/marquee" element={<Marquee />} />
+          <Route path="/discounts" element={<Discounts />} />
           {/* Not linked from the side menu on purpose */}
           <Route path="/site-settings" element={<SiteSettings />} />
 

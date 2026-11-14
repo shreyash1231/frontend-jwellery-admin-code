@@ -125,6 +125,22 @@ export const deleteCollectionApi = async (id) => {
   return http.delete(`${endpoints.deleteCollection}/${id}`);
 };
 
+export const getAllDiscountsApi = async () => {
+  return http.get(`${endpoints.getAllDiscounts}`);
+};
+
+export const addDiscountApi = async (data) => {
+  return http.post(`${endpoints.addDiscount}`, data);
+};
+
+export const updateDiscountApi = async (id, data) => {
+  return http.patch(`${endpoints.updateDiscount}/${id}`, data);
+};
+
+export const deleteDiscountApi = async (id) => {
+  return http.delete(`${endpoints.deleteDiscount}/${id}`);
+};
+
 // The backend pages 40 products at a time by default; the collection picker needs all of them
 export const getAllProductsForPickerApi = async () => {
   return http.get(`${endpoints.getAllProjects}?limit=1000`);

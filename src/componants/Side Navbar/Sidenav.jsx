@@ -25,6 +25,8 @@ import {
   MdLocalShipping,
   MdSwapHoriz,
   MdLogout,
+  MdDiscount,
+  MdExpandMore,
 } from "react-icons/md";
 import Loader from "../Loader/Loader";
 import { errorResponseHandler } from "../../common/http";
@@ -43,6 +45,15 @@ const MENU = [
       { to: "/custom-orders", label: "Custom Orders", icon: MdDesignServices },
       { to: "/payments", label: "Payments", icon: MdOutlinePayments },
       { to: "/coupons", label: "Coupons", icon: MdLocalOffer },
+      {
+        key: "discount",
+        label: "Discount",
+        icon: MdDiscount,
+        children: [
+          { to: "/marquee", label: "Marquee Bar", icon: MdCampaign, newFeature: true },
+          { to: "/discounts", label: "Discounts", icon: MdDiscount },
+        ],
+      },
     ],
   },
   {
@@ -57,7 +68,6 @@ const MENU = [
     title: "Storefront",
     items: [
       { to: "/banners", label: "Banners", icon: MdViewCarousel },
-      { to: "/marquee", label: "Top Marquee", icon: MdCampaign, newFeature: true },
       { to: "/reels", label: "Reels", icon: MdVideoLibrary },
     ],
   },
@@ -88,6 +98,8 @@ const Sidenav = React.memo(({ isOpen }) => {
   const [loading, setLoading] = useState(false);
   const location = useLocation();
   const [newFeatures, setNewFeatures] = useState(false);
+  // Sub-menus the admin opened by hand; a sub-menu holding the current page is always open
+  const [openMenus, setOpenMenus] = useState({});
 
   useEffect(() => {
     getSiteSettingsApi()
@@ -139,7 +151,11 @@ const Sidenav = React.memo(({ isOpen }) => {
 
         <nav className="flex-1 overflow-y-auto sidenav-scroll px-3 py-4">
           {MENU.map((group) => {
-            const items = group.items.filter((i) => !i.newFeature || newFeatures);
+            const visible = (i) => !i.newFeature || newFeatures;
+            const items = group.items
+              .filter(visible)
+              .map((i) => (i.children ? { ...i, children: i.children.filter(visible) } : i))
+              .filter((i) => !i.children || i.children.length);
             if (!items.length) return null;
             return (
               <div key={group.title} className="mb-5">
@@ -147,7 +163,52 @@ const Sidenav = React.memo(({ isOpen }) => {
                   {group.title}
                 </p>
                 <ul className="space-y-0.5">
-                  {items.map(({ to, label, icon: Icon }) => {
+                  {items.map(({ to, key, label, icon: Icon, children }) => {
+                    if (children) {
+                      const hasActive = children.some((c) => c.to === location.pathname);
+                      const open = openMenus[key] ?? hasActive;
+                      return (
+                        <li key={key}>
+                          <button
+                            type="button"
+                            aria-expanded={open}
+                            onClick={() => setOpenMenus((m) => ({ ...m, [key]: !open }))}
+                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                              hasActive ? "text-white font-medium" : "text-gray-300 hover:bg-white/5 hover:text-white"
+                            }`}
+                          >
+                            <Icon className={`text-lg shrink-0 ${hasActive ? "text-[#e3c77a]" : ""}`} />
+                            <span className="flex-1 text-left">{label}</span>
+                            <MdExpandMore
+                              className={`text-lg transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+                            />
+                          </button>
+                          {open && (
+                            <ul className="mt-0.5 ml-5 pl-3 border-l border-white/10 space-y-0.5">
+                              {children.map(({ to: cto, label: clabel, icon: CIcon }) => {
+                                const cActive = location.pathname === cto;
+                                return (
+                                  <li key={cto}>
+                                    <Link
+                                      to={cto}
+                                      aria-current={cActive ? "page" : undefined}
+                                      className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] transition-colors ${
+                                        cActive
+                                          ? "bg-white/10 text-white font-medium"
+                                          : "text-gray-400 hover:bg-white/5 hover:text-white"
+                                      }`}
+                                    >
+                                      <CIcon className={`text-base shrink-0 ${cActive ? "text-[#e3c77a]" : ""}`} />
+                                      <span>{clabel}</span>
+                                    </Link>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          )}
+                        </li>
+                      );
+                    }
                     const active = location.pathname === to;
                     return (
                       <li key={to}>

@@ -50,6 +50,11 @@ const endpoints = {
   updateCollection:"update-collection",
   deleteCollection:"delete-collection",
 
+  addDiscount:"create-discount",
+  getAllDiscounts:"get-all-discounts",
+  updateDiscount:"update-discount",
+  deleteDiscount:"delete-discount",
+
 
 
 
