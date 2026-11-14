@@ -167,3 +167,121 @@
   background: rgba(255, 255, 255, 0.12);
   border-radius: 3px;
 }
+
+/* ---------- Discount offer period: date + time range picker ---------- */
+.offer-range.ant-picker {
+  border-radius: 14px;
+  padding: 10px 14px;
+  border-color: #e6d3a3;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(29, 37, 50, 0.06);
+}
+.offer-range.ant-picker:hover,
+.offer-range.ant-picker-focused {
+  border-color: #c8a24a;
+  box-shadow: 0 0 0 3px rgba(200, 162, 74, 0.18);
+}
+.offer-range.ant-picker-status-error {
+  border-color: #dc2626;
+}
+.offer-range .ant-picker-input > input {
+  font-weight: 600;
+  color: #1d2532;
+}
+.offer-range .ant-picker-active-bar {
+  background: #c8a24a;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.offer-picker .ant-picker-panel-container {
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 18px 50px rgba(29, 37, 50, 0.22);
+}
+/* Navy header with gold month/year */
+.offer-picker .ant-picker-header {
+  background: linear-gradient(135deg, #1d2532, #2f3b4f);
+  border-bottom: 0;
+  color: #fff;
+}
+.offer-picker .ant-picker-header button {
+  color: rgba(255, 255, 255, 0.7);
+}
+.offer-picker .ant-picker-header button:hover,
+.offer-picker .ant-picker-header-view button:hover {
+  color: #e3c77a;
+}
+.offer-picker .ant-picker-header-view button {
+  color: #e3c77a;
+  font-weight: 700;
+}
+.offer-picker .ant-picker-content th {
+  color: #b32126;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+/* Day cells: round, gold range, navy ends, gold ring for today */
+.offer-picker .ant-picker-cell .ant-picker-cell-inner {
+  border-radius: 50%;
+  font-weight: 500;
+}
+.offer-picker .ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner::before {
+  border: 2px solid #c8a24a;
+  border-radius: 50%;
+}
+.offer-picker .ant-picker-cell-in-view.ant-picker-cell-in-range::before,
+.offer-picker .ant-picker-cell-in-view.ant-picker-cell-range-start:not(.ant-picker-cell-range-start-single)::before,
+.offer-picker .ant-picker-cell-in-view.ant-picker-cell-range-end:not(.ant-picker-cell-range-end-single)::before {
+  background: #fbf0d4;
+}
+.offer-picker .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner,
+.offer-picker .ant-picker-cell-in-view.ant-picker-cell-range-start .ant-picker-cell-inner,
+.offer-picker .ant-picker-cell-in-view.ant-picker-cell-range-end .ant-picker-cell-inner {
+  background: linear-gradient(135deg, #1d2532, #34425a);
+  color: #e3c77a;
+  font-weight: 700;
+}
+.offer-picker .ant-picker-cell-in-view.ant-picker-cell-in-range.ant-picker-cell-range-hover::before,
+.offer-picker .ant-picker-cell-in-view.ant-picker-cell-range-hover-start::before,
+.offer-picker .ant-picker-cell-in-view.ant-picker-cell-range-hover-end::before {
+  background: #f5e3b3;
+}
+.offer-picker .ant-picker-cell-disabled::before {
+  background: #f6f6f6;
+}
+/* Time columns */
+.offer-picker .ant-picker-time-panel {
+  border-left: 1px solid #f0e6cc;
+}
+.offer-picker .ant-picker-time-panel-column > li.ant-picker-time-panel-cell-selected .ant-picker-time-panel-cell-inner {
+  background: #fbf0d4;
+  color: #7a5c14;
+  font-weight: 700;
+  border-radius: 8px;
+}
+.offer-picker .ant-picker-time-panel-column > li .ant-picker-time-panel-cell-inner:hover {
+  border-radius: 8px;
+}
+/* Quick presets down the side */
+.offer-picker .ant-picker-presets {
+  background: #fbf6e9;
+  border-right: 1px solid #f0e6cc;
+}
+.offer-picker .ant-picker-presets ul li {
+  border-radius: 999px;
+  font-weight: 600;
+  color: #1d2532;
+  padding: 4px 12px !important;
+}
+.offer-picker .ant-picker-presets ul li:hover {
+  background: #1d2532;
+  color: #e3c77a;
+}
+.offer-picker .ant-picker-ok .ant-btn-primary {
+  background: linear-gradient(135deg, #1d2532, #34425a);
+  border-radius: 999px;
+  padding: 0 16px;
+  font-weight: 600;
+}

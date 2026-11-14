@@ -12,6 +12,8 @@ import {
   MdEvent,
   MdArrowForward,
 } from "react-icons/md";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 import { useToast } from "../toast/Toast";
 import { imgSrc } from "../Collections/CollectionForm";
 
@@ -30,16 +32,41 @@ export const offerPrice = (price, type, value) => {
 export const offerLabel = (d) =>
   d.type === "percentage" ? `${Number(d.value)}% OFF` : `${rupees(d.value)} OFF`;
 
-// Offers run from the start of the start day to the end of the end day, in the admin's local time
-const toInputDate = (d) => {
-  if (!d) return "";
-  const x = new Date(d);
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${x.getFullYear()}-${pad(x.getMonth() + 1)}-${pad(x.getDate())}`;
+// Offer start/end are exact moments (date + time), kept in the form as ISO strings
+const DISPLAY_FORMAT = "DD MMM YYYY, hh:mm A";
+const toIso = (d) => (d ? dayjs(d).second(0).millisecond(0).toISOString() : "");
+// An end picked to the minute (e.g. 11:59 PM) lasts until the end of that minute
+const endIso = (d) => dayjs(d).second(59).millisecond(999).toISOString();
+const nowIso = () => toIso(dayjs());
+
+// "6 days 4 hours", "3 hours 30 minutes"
+const describeLength = (from, to) => {
+  let mins = Math.max(0, Math.round(dayjs(to).diff(dayjs(from), "minute", true)));
+  const days = Math.floor(mins / 1440);
+  mins -= days * 1440;
+  const hours = Math.floor(mins / 60);
+  mins -= hours * 60;
+  const part = (n, w) => (n ? `${n} ${w}${n === 1 ? "" : "s"}` : "");
+  return [part(days, "day"), part(hours, "hour"), days ? "" : part(mins, "minute")]
+    .filter(Boolean)
+    .join(" ") || "less than a minute";
 };
-const startOfDay = (s) => new Date(`${s}T00:00:00`).toISOString();
-const endOfDay = (s) => new Date(`${s}T23:59:59.999`).toISOString();
-const today = () => toInputDate(new Date());
+
+// Time shown when a day is first picked: start of the day for the start, 11:59 PM for the end
+const OPEN_TIMES = [dayjs().startOf("day"), dayjs().hour(23).minute(59).second(0)];
+const PRESETS = [
+  { label: "Next 24 hours", value: () => [dayjs().second(0), dayjs().add(24, "hour").second(0)] },
+  {
+    label: "This weekend",
+    value: () => {
+      const sat = dayjs().day() === 0 ? dayjs().subtract(1, "day") : dayjs().day(6);
+      return [sat.startOf("day"), sat.add(1, "day").hour(23).minute(59).second(0)];
+    },
+  },
+  { label: "7 days", value: () => [dayjs().second(0), dayjs().add(7, "day").hour(23).minute(59).second(0)] },
+  { label: "15 days", value: () => [dayjs().second(0), dayjs().add(15, "day").hour(23).minute(59).second(0)] },
+  { label: "30 days", value: () => [dayjs().second(0), dayjs().add(30, "day").hour(23).minute(59).second(0)] },
+];
 
 const buildState = (initial) => {
   const selected = {};
@@ -53,8 +80,8 @@ const buildState = (initial) => {
     selected,
     type: initial?.type || "percentage",
     value: initial?.value != null ? String(initial.value) : "",
-    startDate: toInputDate(initial?.startDate) || today(),
-    endDate: toInputDate(initial?.endDate) || "",
+    startDate: toIso(initial?.startDate) || nowIso(),
+    endDate: toIso(initial?.endDate),
     isActive: initial?.isActive !== false,
   };
 };
@@ -201,9 +228,8 @@ const DiscountForm = ({ categories, products, initial, isEdit, onSubmit, onBack,
     if (form.scope === "products" && !selectedIds.length) e.selected = "Select at least one product";
     if (!form.value || !(v > 0)) e.value = "Enter a discount more than 0";
     else if (form.type === "percentage" && v >= 100) e.value = "Percentage must be less than 100";
-    if (!form.startDate) e.startDate = "Choose a start date";
-    if (!form.endDate) e.endDate = "Choose an end date";
-    else if (form.startDate && form.endDate < form.startDate) e.endDate = "End date must be on or after the start date";
+    if (!form.startDate || !form.endDate) e.period = "Choose when the offer starts and ends";
+    else if (!dayjs(form.endDate).isAfter(dayjs(form.startDate))) e.period = "End must be after the start";
     setErrors(e);
     return e;
   };
@@ -226,8 +252,8 @@ const DiscountForm = ({ categories, products, initial, isEdit, onSubmit, onBack,
           : [],
       type: form.type,
       value: Number(form.value),
-      startDate: startOfDay(form.startDate),
-      endDate: endOfDay(form.endDate),
+      startDate: form.startDate,
+      endDate: endIso(form.endDate),
       isActive: form.isActive,
     };
     const ok = await onSubmit(payload);
@@ -533,26 +559,71 @@ const DiscountForm = ({ categories, products, initial, isEdit, onSubmit, onBack,
       </Step>
 
       {/* 5. Dates */}
-      <Step n={5} title="Offer period" hint="Runs from the start of the start date to the end of the end date">
-        <div className="flex flex-wrap items-start gap-4">
-          {[
-            { key: "startDate", label: "Start date" },
-            { key: "endDate", label: "End date" },
-          ].map((f) => (
-            <label key={f.key} className="block">
-              <span className="flex items-center gap-1.5 text-sm font-medium text-[#1d2532] mb-1">
-                <MdEvent className="text-[#c8a24a]" /> {f.label}
-              </span>
-              <input
-                type="date"
-                value={form[f.key]}
-                min={f.key === "endDate" ? form.startDate || undefined : undefined}
-                onChange={(e) => set({ [f.key]: e.target.value })}
-                className={`border rounded-xl px-4 py-2.5 w-52 ${errors[f.key] ? "border-red-500" : "border-gray-300"}`}
-              />
-              {errText(f.key)}
-            </label>
-          ))}
+      <Step n={5} title="Offer period" hint="Pick the date and time the offer starts and ends, or use a quick preset">
+        <div className="rounded-2xl border border-[#efe2bd] bg-gradient-to-br from-[#fbf6e9] via-white to-white p-4 max-w-3xl">
+          <DatePicker.RangePicker
+            className="offer-range w-full"
+            classNames={{ popup: { root: "offer-picker" } }}
+            // Above the edit popup (z-index 9999999)
+            styles={{ popup: { root: { zIndex: 10000001 } } }}
+            size="large"
+            format={DISPLAY_FORMAT}
+            showTime={{ format: "hh:mm A", use12Hours: true, defaultOpenValue: OPEN_TIMES }}
+            presets={PRESETS}
+            placeholder={["Starts on", "Ends on"]}
+            suffixIcon={<MdEvent className="text-lg text-[#c8a24a]" />}
+            status={errors.period ? "error" : undefined}
+            // New offers can't start in the past; old ones may already have
+            disabledDate={isEdit ? undefined : (d) => d.isBefore(dayjs().startOf("day"))}
+            value={[
+              form.startDate ? dayjs(form.startDate) : null,
+              form.endDate ? dayjs(form.endDate) : null,
+            ]}
+            onChange={(v) => {
+              set({ startDate: toIso(v?.[0]), endDate: toIso(v?.[1]) });
+              setErrors((e) => ({ ...e, period: undefined }));
+            }}
+          />
+
+          {/* Summary */}
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-3 mt-4">
+            {[
+              { label: "Starts", value: form.startDate },
+              null,
+              { label: "Ends", value: form.endDate },
+            ].map((s, i) =>
+              s ? (
+                <div key={s.label} className="flex items-center gap-3 rounded-xl bg-white border border-gray-200 px-3 py-2.5">
+                  <span className="w-11 h-11 rounded-lg overflow-hidden shrink-0 text-center shadow-sm border border-gray-200">
+                    <span className="block text-[9px] font-bold tracking-wider uppercase bg-[#b32126] text-white leading-4">
+                      {s.value ? dayjs(s.value).format("MMM") : "—"}
+                    </span>
+                    <span className="block text-base font-extrabold text-[#1d2532] leading-7">
+                      {s.value ? dayjs(s.value).format("D") : "?"}
+                    </span>
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[11px] font-semibold tracking-widest uppercase text-gray-400">{s.label}</span>
+                    <span className="block text-sm font-semibold text-[#1d2532] truncate">
+                      {s.value ? dayjs(s.value).format("ddd, DD MMM YYYY") : "Not set"}
+                    </span>
+                    <span className="block text-xs text-[#7a5c14] font-medium">
+                      {s.value ? dayjs(s.value).format("hh:mm A") : "—"}
+                    </span>
+                  </span>
+                </div>
+              ) : (
+                <MdArrowForward key={i} className="hidden sm:block text-xl text-[#c8a24a] justify-self-center" />
+              ),
+            )}
+          </div>
+
+          {form.startDate && form.endDate && dayjs(form.endDate).isAfter(dayjs(form.startDate)) && (
+            <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-[#1d2532] text-[#e3c77a]">
+              <MdEvent /> Runs for {describeLength(form.startDate, endIso(form.endDate))}
+            </p>
+          )}
+          {errText("period")}
         </div>
       </Step>
 

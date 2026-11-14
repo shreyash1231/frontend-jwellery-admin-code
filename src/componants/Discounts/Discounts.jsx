@@ -30,10 +30,34 @@ import DeleteModal from "../deleteModal/DeleteModal";
 import { imgSrc, ConfirmModal } from "../Collections/CollectionForm";
 import DiscountForm, { Switch, idOf, offerLabel } from "./DiscountForm";
 
-const formatDate = (d) =>
-  d ? new Date(d).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" }) : "-";
+const formatDateTime = (d) =>
+  d
+    ? new Date(d).toLocaleString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      })
+    : "-";
 
-const DAY = 24 * 60 * 60 * 1000;
+const HOUR = 60 * 60 * 1000;
+const DAY = 24 * HOUR;
+
+// "3 days", "5 hours", "20 minutes"
+const until = (ms) => {
+  if (ms >= DAY) {
+    const n = Math.floor(ms / DAY);
+    return `${n} day${n === 1 ? "" : "s"}`;
+  }
+  if (ms >= HOUR) {
+    const n = Math.floor(ms / HOUR);
+    return `${n} hour${n === 1 ? "" : "s"}`;
+  }
+  const n = Math.max(1, Math.ceil(ms / 60000));
+  return `${n} minute${n === 1 ? "" : "s"}`;
+};
 
 // Where an offer stands right now
 const statusOf = (d, now = Date.now()) => {
@@ -60,14 +84,8 @@ const FILTERS = [
 
 const timeNote = (d, status) => {
   const now = Date.now();
-  if (status === "live") {
-    const days = Math.ceil((new Date(d.endDate).getTime() - now) / DAY);
-    return days <= 1 ? "Ends today" : `${days} days left`;
-  }
-  if (status === "scheduled") {
-    const days = Math.ceil((new Date(d.startDate).getTime() - now) / DAY);
-    return days <= 1 ? "Starts tomorrow" : `Starts in ${days} days`;
-  }
+  if (status === "live") return `Ends in ${until(new Date(d.endDate).getTime() - now)}`;
+  if (status === "scheduled") return `Starts in ${until(new Date(d.startDate).getTime() - now)}`;
   return null;
 };
 
@@ -403,10 +421,17 @@ const Discounts = () => {
                     </p>
                   </div>
 
-                  <p className="mt-2 flex items-center gap-1 text-xs text-gray-500">
-                    <MdEvent className="text-sm text-[#c8a24a]" />
-                    {formatDate(d.startDate)} – {formatDate(d.endDate)}
-                  </p>
+                  <div className="mt-2 flex items-start gap-1.5 text-xs text-gray-500">
+                    <MdEvent className="text-sm text-[#c8a24a] mt-0.5 shrink-0" />
+                    <span>
+                      <span className="block">
+                        <span className="text-gray-400">From</span> {formatDateTime(d.startDate)}
+                      </span>
+                      <span className="block">
+                        <span className="text-gray-400">To</span> {formatDateTime(d.endDate)}
+                      </span>
+                    </span>
+                  </div>
 
                   <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-gray-100">
                     <label className="flex items-center gap-2 text-xs font-semibold text-gray-600">
