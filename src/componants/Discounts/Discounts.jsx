@@ -340,7 +340,7 @@ const Discounts = () => {
                     </div>
                     <span className="w-14 h-14 rounded-xl bg-white/15 overflow-hidden shrink-0 flex items-center justify-center text-2xl text-white/70">
                       {d.category?.imageUrl ? (
-                        <img src={imgSrc(d.category.imageUrl, 120)} alt="" className="w-full h-full object-cover" loading="lazy" />
+                        <img src={imgSrc(d.category.imageUrl, 160)} alt="" className="w-full h-full object-cover" loading="lazy" />
                       ) : (
                         <MdCategory />
                       )}

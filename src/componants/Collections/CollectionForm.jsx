@@ -24,11 +24,15 @@ const idOf = (x) => x?._id || x?.id || x;
 
 // Category images are stored either as a full URL or as an "uploads/..." path.
 // Uploads are full-size photos (up to ~50 MB once decoded), so lists use a small server-made thumbnail.
+const THUMB_WIDTHS = [80, 160, 320];
+
 export const imgSrc = (path, width) => {
   if (!path) return "";
   if (/^https?:\/\//.test(path)) return path;
   if (width && /^uploads\/[\w.-]+$/.test(path)) {
-    return `${process.env.REACT_APP_BASE_URL || ""}/api/v1/user/image-thumb?w=${width}&path=${encodeURIComponent(path)}`;
+    // The server only makes thumbnails at these widths and rejects any other size
+    const w = THUMB_WIDTHS.find((t) => t >= width) || THUMB_WIDTHS[THUMB_WIDTHS.length - 1];
+    return `${process.env.REACT_APP_BASE_URL || ""}/api/v1/user/image-thumb?w=${w}&path=${encodeURIComponent(path)}`;
   }
   return `${image_url}/${path}`;
 };

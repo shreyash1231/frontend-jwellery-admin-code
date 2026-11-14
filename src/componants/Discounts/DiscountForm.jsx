@@ -277,7 +277,7 @@ const DiscountForm = ({ categories, products, initial, isEdit, onSubmit, onBack,
                 >
                   <span className="w-11 h-11 rounded-lg bg-gray-100 overflow-hidden shrink-0 flex items-center justify-center text-gray-300 text-xl">
                     {c.imageUrl ? (
-                      <img src={imgSrc(c.imageUrl, 120)} alt="" className="w-full h-full object-cover" loading="lazy" />
+                      <img src={imgSrc(c.imageUrl, 160)} alt="" className="w-full h-full object-cover" loading="lazy" />
                     ) : (
                       <MdCategory />
                     )}
@@ -399,7 +399,7 @@ const DiscountForm = ({ categories, products, initial, isEdit, onSubmit, onBack,
                           </span>
                           <span className="w-11 h-11 rounded-lg bg-gray-100 overflow-hidden shrink-0 flex items-center justify-center text-gray-300">
                             {firstImage(p) ? (
-                              <img src={imgSrc(firstImage(p), 120)} alt="" className="w-full h-full object-cover" loading="lazy" />
+                              <img src={imgSrc(firstImage(p), 160)} alt="" className="w-full h-full object-cover" loading="lazy" />
                             ) : (
                               <MdDiamond />
                             )}
