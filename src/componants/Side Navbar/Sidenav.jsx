@@ -27,6 +27,8 @@ import {
   MdLogout,
   MdDiscount,
   MdExpandMore,
+  MdRateReview,
+  MdAccountTree,
 } from "react-icons/md";
 import Loader from "../Loader/Loader";
 import { errorResponseHandler } from "../../common/http";
@@ -54,6 +56,7 @@ const MENU = [
           { to: "/discounts", label: "Discounts", icon: MdDiscount },
         ],
       },
+      { to: "/delivery", label: "Delivery", icon: MdLocalShipping },
     ],
   },
   {
@@ -61,7 +64,9 @@ const MENU = [
     items: [
       { to: "/products", label: "Products", icon: MdDiamond },
       { to: "/domains", label: "Category", icon: MdCategory },
+      { to: "/multi-category", label: "Multi Category", icon: MdAccountTree },
       { to: "/collections", label: "Collections", icon: MdCollectionsBookmark },
+      { to: "/reviews", label: "Reviews", icon: MdRateReview },
     ],
   },
   {

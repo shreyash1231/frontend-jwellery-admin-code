@@ -141,6 +141,49 @@ export const deleteDiscountApi = async (id) => {
   return http.delete(`${endpoints.deleteDiscount}/${id}`);
 };
 
+export const getAllReviewsApi = async () => {
+  return http.get(`${endpoints.getAllReviews}`);
+};
+
+// Sent as form data so photos/videos can go with the review
+export const addReviewApi = async (data) => {
+  return http.postFormData(`${endpoints.addReview}`, data);
+};
+
+export const updateReviewApi = async (id, data) => {
+  return http.patchFormData(`${endpoints.updateReview}/${id}`, data);
+};
+
+export const deleteReviewApi = async (id) => {
+  return http.delete(`${endpoints.deleteReview}/${id}`);
+};
+
+// Multi category: extra categories a product is listed in besides its main one
+export const getAllProductCategoriesApi = async () => {
+  return http.get(`${endpoints.getAllProductCategories}`);
+};
+
+export const getProductCategoriesApi = async (productId) => {
+  return http.get(`${endpoints.getProductCategories}/${productId}`);
+};
+
+// categories: [{ category, isActive }] — the full list; anything left out is removed
+export const saveProductCategoriesApi = async (product, categories) => {
+  return http.put(`${endpoints.saveProductCategories}`, { product, categories });
+};
+
+export const updateProductCategoryStatusApi = async (id, isActive) => {
+  return http.patch(`${endpoints.updateProductCategoryStatus}/${id}`, { isActive });
+};
+
+export const deleteProductCategoryApi = async (id) => {
+  return http.delete(`${endpoints.deleteProductCategory}/${id}`);
+};
+
+export const deleteProductCategoriesApi = async (productId) => {
+  return http.delete(`${endpoints.deleteProductCategories}/${productId}`);
+};
+
 // The backend pages 40 products at a time by default; the collection picker needs all of them
 export const getAllProductsForPickerApi = async () => {
   return http.get(`${endpoints.getAllProjects}?limit=1000`);

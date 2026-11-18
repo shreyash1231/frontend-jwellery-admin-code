@@ -34,6 +34,9 @@ import Marquee from "./componants/Marquee/Marquee";
 import SiteSettings from "./componants/SiteSettings/SiteSettings";
 import Collections from "./componants/Collections/Collections";
 import Discounts from "./componants/Discounts/Discounts";
+import Reviews from "./componants/Reviews/Reviews";
+import Delivery from "./componants/Delivery/Delivery";
+import MultiCategory from "./componants/MultiCategory/MultiCategory";
 
 const Home = lazy(() => import("./componants/Home/Home"));
 const Profile = lazy(() => import("./componants/Profile/Profile"));
@@ -118,6 +121,8 @@ const AuthenticatedApp = ({ isOpen, toggleSidenav }) => {
           <Route path="/coupons" element={<Coupons />} />
           <Route path="/marquee" element={<Marquee />} />
           <Route path="/discounts" element={<Discounts />} />
+          <Route path="/delivery" element={<Delivery />} />
+          <Route path="/reviews" element={<Reviews />} />
           {/* Not linked from the side menu on purpose */}
           <Route path="/site-settings" element={<SiteSettings />} />
 
@@ -139,6 +144,7 @@ const AuthenticatedApp = ({ isOpen, toggleSidenav }) => {
 
           <Route path="/products" element={<Products />} />
           <Route path="/collections" element={<Collections />} />
+          <Route path="/multi-category" element={<MultiCategory />} />
           {/* <Route path="/blogs" element={<Blogs />} /> */}
 
           <Route path="/terms-conditions" element={<Terms />} />

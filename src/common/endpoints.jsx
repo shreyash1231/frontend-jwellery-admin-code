@@ -55,6 +55,18 @@ const endpoints = {
   updateDiscount:"update-discount",
   deleteDiscount:"delete-discount",
 
+  addReview:"create-review",
+  getAllReviews:"get-all-reviews",
+  updateReview:"update-review",
+  deleteReview:"delete-review",
+
+  getAllProductCategories:"get-all-product-categories",
+  getProductCategories:"get-product-categories",
+  saveProductCategories:"save-product-categories",
+  updateProductCategoryStatus:"update-product-category-status",
+  deleteProductCategory:"delete-product-category",
+  deleteProductCategories:"delete-product-categories",
+
 
 
 

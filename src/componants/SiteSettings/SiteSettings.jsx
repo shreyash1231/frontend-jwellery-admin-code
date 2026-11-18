@@ -10,6 +10,8 @@ const NEW_FEATURES = [
   "Sub-categories: hidden from menus and shown inside their parent category page",
   "Discount badges (% OFF) on product cards and product pages",
   "New coupon box at checkout: celebration on apply, inline errors, \"add ₹X more\" hints",
+  "Star ratings on product cards, and reviews (sort + load more) on product pages",
+  "Pincode delivery check on product pages, using the charge and days set on the Delivery page",
 ];
 
 // Hidden page: reachable only at /site-settings, not linked from the side menu
