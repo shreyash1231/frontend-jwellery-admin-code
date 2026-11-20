@@ -441,6 +441,7 @@ const Reviews = () => {
                 initial={editing}
                 isEdit
                 onSubmit={handleUpdate}
+                onCancel={() => (editDirty ? setConfirmCloseEdit(true) : closeEdit())}
                 onDirtyChange={setEditDirty}
               />
             </div>

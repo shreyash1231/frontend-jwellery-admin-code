@@ -8,6 +8,7 @@ import {
   MdVerified,
   MdCloudUpload,
   MdClose,
+  MdRefresh,
   MdPlayCircle,
   MdDiamond,
   MdPerson,
@@ -67,7 +68,7 @@ const buildState = (initial) => ({
   keepMedia: (initial?.media || []).map((m) => ({ type: m.type, url: m.url })),
 });
 
-const ReviewForm = ({ products, users, initial, isEdit, onSubmit, onDirtyChange }) => {
+const ReviewForm = ({ products, users, initial, isEdit, onSubmit, onCancel, onDirtyChange }) => {
   const message = useToast();
   const [form, setForm] = useState(() => buildState(initial));
   const [files, setFiles] = useState([]); // { file, url, type }
@@ -76,7 +77,20 @@ const ReviewForm = ({ products, users, initial, isEdit, onSubmit, onDirtyChange 
   const [saving, setSaving] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInput = useRef(null);
+  const nameInput = useRef(null);
+  const focusName = useRef(false);
   const initialSnapshot = useRef(JSON.stringify(buildState(initial)));
+
+  // Custom name just picked: put the cursor in the name box once it shows.
+  // Done after the dropdown closes, since the Select takes focus back while closing.
+  useEffect(() => {
+    if (!focusName.current || form.reviewer !== CUSTOM_REVIEWER) return;
+    focusName.current = false;
+    const t = setTimeout(() => nameInput.current?.focus(), 50);
+    return () => clearTimeout(t);
+  }, [form.reviewer]);
+
+  const isDirty = JSON.stringify(form) !== initialSnapshot.current || files.length > 0;
 
   const set = (k, v) => {
     setForm((f) => ({ ...f, [k]: v }));
@@ -289,7 +303,10 @@ const ReviewForm = ({ products, users, initial, isEdit, onSubmit, onDirtyChange 
             value={form.reviewer}
             options={reviewerOptions}
             filterOption={(input, opt) => opt.search.includes(input.toLowerCase())}
-            onChange={(v) => set("reviewer", v)}
+            onChange={(v) => {
+              focusName.current = v === CUSTOM_REVIEWER;
+              set("reviewer", v);
+            }}
             status={errors.reviewer ? "error" : undefined}
             notFoundContent="No customer found"
           />
@@ -298,6 +315,7 @@ const ReviewForm = ({ products, users, initial, isEdit, onSubmit, onDirtyChange 
         {form.reviewer === CUSTOM_REVIEWER && (
           <Field label="Name shown on the review" required error={errors.reviewerName}>
             <input
+              ref={nameInput}
               type="text"
               value={form.reviewerName}
               maxLength={60}
@@ -427,14 +445,38 @@ const ReviewForm = ({ products, users, initial, isEdit, onSubmit, onDirtyChange 
       </div>
 
       <div className="lg:col-span-2 flex justify-end pt-2 border-t border-gray-100">
-        <button
-          type="submit"
-          disabled={saving}
-          className="mt-4 flex items-center gap-2 px-6 py-2.5 bg-[#1d2532] text-white rounded-xl font-semibold disabled:opacity-60"
-        >
-          <MdSave className="text-lg" />
-          {saving ? (files.length ? "Uploading..." : "Saving...") : isEdit ? "Save changes" : "Add review"}
-        </button>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            type="submit"
+            disabled={saving}
+            className="flex items-center gap-2 px-6 py-2.5 bg-[#1d2532] text-white rounded-xl font-semibold disabled:opacity-60"
+          >
+            <MdSave className="text-lg" />
+            {saving ? (files.length ? "Uploading..." : "Saving...") : isEdit ? "Save changes" : "Add review"}
+          </button>
+          {isEdit ? (
+            onCancel && (
+              <button
+                type="button"
+                disabled={saving}
+                onClick={onCancel}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 disabled:opacity-60"
+              >
+                <MdClose className="text-lg" /> Cancel
+              </button>
+            )
+          ) : (
+            <button
+              type="button"
+              disabled={saving || !isDirty}
+              onClick={reset}
+              title="Clear the form"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <MdRefresh className="text-lg" /> Reset
+            </button>
+          )}
+        </div>
       </div>
     </form>
   );
