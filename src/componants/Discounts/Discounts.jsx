@@ -22,13 +22,23 @@ import {
   deleteDiscountApi,
   getDomainsApi,
   getAllProductsForPickerApi,
+  getAllProductCategoriesApi,
 } from "../../common/services";
 import { errorResponseHandler } from "../../common/http";
 import { useToast } from "../toast/Toast";
 import Load from "../Load/Load";
 import DeleteModal from "../deleteModal/DeleteModal";
 import { imgSrc, ConfirmModal } from "../Collections/CollectionForm";
-import DiscountForm, { Switch, idOf, offerLabel } from "./DiscountForm";
+import DiscountForm, {
+  Switch,
+  idOf,
+  offerLabel,
+  offerCovers,
+  buildProductCats,
+} from "./DiscountForm";
+
+// Populated categories of an offer (old offers had a single `category`)
+const categoriesOf = (d) => (d.categories?.length ? d.categories : d.category ? [d.category] : []).filter(Boolean);
 
 const formatDateTime = (d) =>
   d
@@ -96,6 +106,7 @@ const Discounts = () => {
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
+  const [categoryLinks, setCategoryLinks] = useState([]);
   const [discounts, setDiscounts] = useState([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
@@ -126,9 +137,15 @@ const Discounts = () => {
     const load = async () => {
       try {
         setLoading(true);
-        const [catRes, prodRes] = await Promise.all([getDomainsApi(), getAllProductsForPickerApi()]);
+        const [catRes, prodRes, linkRes] = await Promise.all([
+          getDomainsApi(),
+          getAllProductsForPickerApi(),
+          // Extra categories from the Multi Category page; offers still work without them
+          getAllProductCategoriesApi().catch(() => null),
+        ]);
         setCategories(catRes?.data || []);
         setProducts(prodRes?.data?.products || []);
+        setCategoryLinks(linkRes?.data || []);
         await fetchDiscounts();
       } catch (err) {
         errorResponseHandler(err);
@@ -139,19 +156,12 @@ const Discounts = () => {
     load();
   }, []);
 
-  const productsInCategory = useMemo(() => {
-    const map = {};
-    products.forEach((p) => {
-      const c = idOf(p.categoryId);
-      if (c) map[c] = (map[c] || 0) + 1;
-    });
-    return map;
-  }, [products]);
+  const productCats = useMemo(() => buildProductCats(products, categoryLinks), [products, categoryLinks]);
 
-  // How many products an offer lowers the price of (switched-off products don't count)
+  // How many products an offer lowers the price of (each product once, switched-off ones don't count)
   const coveredCount = (d) =>
     d.scope === "category"
-      ? productsInCategory[idOf(d.category)] || 0
+      ? products.filter((p) => offerCovers(d, idOf(p), productCats.get(String(idOf(p))))).length
       : (d.products || []).filter((p) => p.isActive !== false).length;
 
   const handleAdd = async (payload) => {
@@ -222,7 +232,7 @@ const Discounts = () => {
   const liveProducts = useMemo(
     () => discounts.filter((d) => statusOf(d) === "live").reduce((n, d) => n + coveredCount(d), 0),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [discounts, productsInCategory],
+    [discounts, products, productCats],
   );
 
   const filtered = useMemo(() => {
@@ -232,7 +242,7 @@ const Discounts = () => {
         (filter === "all" || statusOf(d) === filter) &&
         (!q ||
           (d.title || "").toLowerCase().includes(q) ||
-          (d.category?.name || "").toLowerCase().includes(q)),
+          categoriesOf(d).some((c) => (c.name || "").toLowerCase().includes(q))),
     );
   }, [discounts, search, filter]);
 
@@ -274,7 +284,14 @@ const Discounts = () => {
           <MdAddCircleOutline className="text-2xl text-[#c8a24a]" />
           <h3 className="text-lg font-semibold text-[#1d2532]">Create an offer</h3>
         </div>
-        <DiscountForm categories={categories} products={products} onSubmit={handleAdd} onBack={goBack} />
+        <DiscountForm
+          categories={categories}
+          products={products}
+          productCats={productCats}
+          discounts={discounts}
+          onSubmit={handleAdd}
+          onBack={goBack}
+        />
       </div>
 
       {/* Listing */}
@@ -327,6 +344,8 @@ const Discounts = () => {
           {pageItems.map((d) => {
             const status = statusOf(d);
             const s = STATUS[status];
+            const cats = categoriesOf(d);
+            const cover = cats.find((c) => c.imageUrl);
             const note = timeNote(d, status);
             const covered = coveredCount(d);
             const off = (d.products || []).filter((p) => p.isActive === false).length;
@@ -357,8 +376,8 @@ const Discounts = () => {
                       {note && <p className="text-xs text-white/80 mt-1">{note}</p>}
                     </div>
                     <span className="w-14 h-14 rounded-xl bg-white/15 overflow-hidden shrink-0 flex items-center justify-center text-2xl text-white/70">
-                      {d.category?.imageUrl ? (
-                        <img src={imgSrc(d.category.imageUrl, 160)} alt="" className="w-full h-full object-cover" loading="lazy" />
+                      {cover ? (
+                        <img src={imgSrc(cover.imageUrl, 160)} alt="" className="w-full h-full object-cover" loading="lazy" />
                       ) : (
                         <MdCategory />
                       )}
@@ -389,12 +408,24 @@ const Discounts = () => {
                     {d.title}
                   </h4>
                   <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-[#fbf6e9] text-[#7a5c14]">
-                      {d.category?.name || "Deleted category"}
-                    </span>
+                    {cats.length ? (
+                      cats.map((c) => (
+                        <span key={idOf(c)} className="text-xs px-2 py-0.5 rounded-full bg-[#fbf6e9] text-[#7a5c14]">
+                          {c.name}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-[#fbf6e9] text-[#7a5c14]">
+                        Deleted category
+                      </span>
+                    )}
                     <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
                       {d.scope === "category" ? <MdCategory /> : <MdChecklist />}
-                      {d.scope === "category" ? "Whole category" : "Specific products"}
+                      {d.scope === "category"
+                        ? cats.length > 1
+                          ? "Whole categories"
+                          : "Whole category"
+                        : "Specific products"}
                     </span>
                   </div>
 
@@ -504,6 +535,8 @@ const Discounts = () => {
                 key={editing._id}
                 categories={categories}
                 products={products}
+                productCats={productCats}
+                discounts={discounts}
                 initial={editing}
                 isEdit
                 onSubmit={handleUpdate}

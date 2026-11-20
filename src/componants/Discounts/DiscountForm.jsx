@@ -11,11 +11,13 @@ import {
   MdChecklist,
   MdEvent,
   MdArrowForward,
+  MdWarningAmber,
+  MdLocalOffer,
 } from "react-icons/md";
 import { DatePicker } from "antd";
 import dayjs from "dayjs";
 import { useToast } from "../toast/Toast";
-import { imgSrc } from "../Collections/CollectionForm";
+import { imgSrc, ConfirmModal } from "../Collections/CollectionForm";
 
 export const idOf = (x) => x?._id || x?.id || x;
 export const firstImage = (p) => (Array.isArray(p?.imageUrl) ? p.imageUrl[0] : p?.imageUrl);
@@ -68,6 +70,35 @@ const PRESETS = [
   { label: "30 days", value: () => [dayjs().second(0), dayjs().add(30, "day").hour(23).minute(59).second(0)] },
 ];
 
+// Category ids of an offer (old offers had a single `category`)
+export const offerCategoryIds = (d) =>
+  (d?.categories?.length ? d.categories : d?.category ? [d.category] : []).map((c) => String(idOf(c)));
+
+// Map(productId -> Set(categoryId)): main category plus active Multi Category links
+export const buildProductCats = (products, links) => {
+  const map = new Map();
+  products.forEach((p) => {
+    const set = new Set();
+    if (p.categoryId) set.add(String(idOf(p.categoryId)));
+    map.set(String(idOf(p)), set);
+  });
+  (links || []).forEach((row) => {
+    const set = map.get(String(idOf(row.product)));
+    if (!set) return;
+    (row.categories || []).forEach((l) => l.isActive !== false && l.category && set.add(String(idOf(l.category))));
+  });
+  return map;
+};
+
+// Does a saved offer give this product a price (switched-off products don't count)?
+export const offerCovers = (d, productId, cats) => {
+  if (!cats || !offerCategoryIds(d).some((c) => cats.has(c))) return false;
+  if (d.scope === "category") return true;
+  return (d.products || []).some((p) => p.isActive !== false && String(idOf(p.product)) === String(productId));
+};
+
+const sameDiscount = (a, b) => a.type === b.type && Number(a.value) === Number(b.value);
+
 const buildState = (initial) => {
   const selected = {};
   (initial?.products || []).forEach((p) => {
@@ -75,7 +106,7 @@ const buildState = (initial) => {
   });
   return {
     title: initial?.title || "",
-    category: idOf(initial?.category) || "",
+    categories: offerCategoryIds(initial),
     scope: initial?.scope || "category",
     selected,
     type: initial?.type || "percentage",
@@ -159,12 +190,23 @@ const ChoiceCard = ({ active, icon, title, text, onClick }) => (
 );
 
 // Used for both "add" (on the page) and "edit" (inside the popup)
-const DiscountForm = ({ categories, products, initial, isEdit, onSubmit, onBack, onDirtyChange }) => {
+const DiscountForm = ({
+  categories,
+  products,
+  productCats,
+  discounts = [],
+  initial,
+  isEdit,
+  onSubmit,
+  onBack,
+  onDirtyChange,
+}) => {
   const message = useToast();
   const [form, setForm] = useState(() => buildState(initial));
   const [search, setSearch] = useState("");
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
+  const [confirmClash, setConfirmClash] = useState(null);
 
   const initialJson = useMemo(() => JSON.stringify(buildState(initial)), [initial]);
   useEffect(() => {
@@ -180,10 +222,56 @@ const DiscountForm = ({ categories, products, initial, isEdit, onSubmit, onBack,
     });
   };
 
+  const catsOf = (p) => productCats?.get(String(idOf(p))) || new Set([String(idOf(p.categoryId))]);
+  const inCategories = (p, ids) => ids.some((c) => catsOf(p).has(c));
+
   const catProducts = useMemo(
-    () => products.filter((p) => String(idOf(p.categoryId)) === String(form.category)),
-    [products, form.category],
+    () => products.filter((p) => inCategories(p, form.categories)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [products, productCats, form.categories],
   );
+
+  const categoryName = useMemo(() => {
+    const m = {};
+    categories.forEach((c) => (m[String(idOf(c))] = c.name));
+    return m;
+  }, [categories]);
+
+  // Other offers that could run at the same time as this one (not this offer, not off, not over)
+  const otherOffers = useMemo(() => {
+    const now = Date.now();
+    return discounts.filter(
+      (d) =>
+        String(d._id) !== String(initial?._id) &&
+        d.isActive !== false &&
+        new Date(d.endDate).getTime() >= now &&
+        (!form.startDate || !form.endDate ||
+          (new Date(d.startDate) <= new Date(form.endDate) && new Date(form.startDate) <= new Date(d.endDate))),
+    );
+  }, [discounts, initial, form.startDate, form.endDate]);
+
+  // Offers already on each category, to highlight them in the picker
+  const offersByCategory = useMemo(() => {
+    const m = {};
+    otherOffers.forEach((d) => offerCategoryIds(d).forEach((c) => (m[c] = [...(m[c] || []), d])));
+    return m;
+  }, [otherOffers]);
+
+  // Other offers that already cover a product: `clash` gives a different discount, `same` the same one
+  const offersOn = (p) => {
+    const cats = catsOf(p);
+    const hits = otherOffers.filter((d) => offerCovers(d, idOf(p), cats));
+    const valueSet = Number(form.value) > 0;
+    return {
+      clash: valueSet ? hits.filter((d) => !sameDiscount(d, form)) : hits,
+      same: valueSet ? hits.filter((d) => sameDiscount(d, form)) : [],
+    };
+  };
+
+  const offerNote = (d) => {
+    const via = offerCategoryIds(d).map((c) => categoryName[c]).filter(Boolean).join(", ");
+    return `${d.title} (${offerLabel(d)}${via ? ` · ${via}` : ""})`;
+  };
 
   const visibleProducts = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -197,10 +285,25 @@ const DiscountForm = ({ categories, products, initial, isEdit, onSubmit, onBack,
   const coveredProducts =
     form.scope === "category" ? catProducts : catProducts.filter((p) => form.selected[idOf(p)]);
 
-  const chooseCategory = (id) => {
-    if (id === form.category) return;
-    set({ category: id, selected: {} });
-    setSearch("");
+  // Products of the offer that another offer already prices differently
+  const clashing = useMemo(
+    () => coveredProducts.map((p) => ({ p, ...offersOn(p) })).filter((x) => x.clash.length),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [coveredProducts, otherOffers, form.type, form.value],
+  );
+
+  const toggleCategory = (id) => {
+    const key = String(id);
+    const next = form.categories.includes(key)
+      ? form.categories.filter((c) => c !== key)
+      : [...form.categories, key];
+    // Keep only picked products that are still in one of the chosen categories
+    const selected = {};
+    Object.keys(form.selected).forEach((pid) => {
+      const p = products.find((x) => String(idOf(x)) === pid);
+      if (p && inCategories(p, next)) selected[pid] = form.selected[pid];
+    });
+    set({ categories: next, selected });
   };
 
   const toggleProduct = (id) => {
@@ -224,7 +327,7 @@ const DiscountForm = ({ categories, products, initial, isEdit, onSubmit, onBack,
     const e = {};
     const v = Number(form.value);
     if (form.title.trim().length < 2) e.title = "Give the offer a name (at least 2 characters)";
-    if (!form.category) e.category = "Choose a category";
+    if (!form.categories.length) e.category = "Choose at least one category";
     if (form.scope === "products" && !selectedIds.length) e.selected = "Select at least one product";
     if (!form.value || !(v > 0)) e.value = "Enter a discount more than 0";
     else if (form.type === "percentage" && v >= 100) e.value = "Percentage must be less than 100";
@@ -241,10 +344,19 @@ const DiscountForm = ({ categories, products, initial, isEdit, onSubmit, onBack,
       message.error(Object.values(errs)[0]);
       return;
     }
+    if (clashing.length) {
+      setConfirmClash(clashing);
+      return;
+    }
+    save();
+  };
+
+  const save = async () => {
+    setConfirmClash(null);
     setSaving(true);
     const payload = {
       title: form.title.trim(),
-      category: form.category,
+      categories: form.categories,
       scope: form.scope,
       products:
         form.scope === "products"
@@ -284,21 +396,44 @@ const DiscountForm = ({ categories, products, initial, isEdit, onSubmit, onBack,
       </Step>
 
       {/* 2. Category */}
-      <Step n={2} title="Choose a category" hint="The offer works on products of this category">
+      <Step
+        n={2}
+        title="Choose categories"
+        hint="Pick one or more. Products listed in several categories (Multi Category) are counted once."
+        right={
+          form.categories.length > 0 && (
+            <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#1d2532] text-[#e3c77a]">
+              {form.categories.length} selected · {catProducts.length} product{catProducts.length === 1 ? "" : "s"}
+            </span>
+          )
+        }
+      >
+        {Object.keys(offersByCategory).length > 0 && (
+          <p className="flex items-center gap-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-3 max-w-3xl">
+            <MdWarningAmber className="text-base shrink-0" />
+            Categories with an amber border already have a live or scheduled offer for these dates.
+          </p>
+        )}
         {categories.length ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {categories.map((c) => {
               const id = idOf(c);
-              const active = String(id) === String(form.category);
-              const count = products.filter((p) => String(idOf(p.categoryId)) === String(id)).length;
+              const active = form.categories.includes(String(id));
+              const count = products.filter((p) => catsOf(p).has(String(id))).length;
+              const existing = offersByCategory[String(id)] || [];
               return (
                 <button
                   key={id}
                   type="button"
-                  onClick={() => chooseCategory(id)}
+                  onClick={() => toggleCategory(id)}
                   aria-pressed={active}
+                  title={existing.length ? `Already on offer: ${existing.map(offerNote).join("; ")}` : undefined}
                   className={`relative flex items-center gap-3 p-2.5 rounded-xl border-2 text-left transition-all ${
-                    active ? "border-[#c8a24a] bg-[#fbf6e9]" : "border-gray-200 bg-white hover:border-gray-300"
+                    active
+                      ? "border-[#c8a24a] bg-[#fbf6e9]"
+                      : existing.length
+                        ? "border-amber-300 bg-amber-50/60 hover:border-amber-400"
+                        : "border-gray-200 bg-white hover:border-gray-300"
                   }`}
                 >
                   <span className="w-11 h-11 rounded-lg bg-gray-100 overflow-hidden shrink-0 flex items-center justify-center text-gray-300 text-xl">
@@ -313,6 +448,14 @@ const DiscountForm = ({ categories, products, initial, isEdit, onSubmit, onBack,
                     <span className="block text-[11px] text-gray-500">
                       {count} product{count === 1 ? "" : "s"}
                     </span>
+                    {existing.length > 0 && (
+                      <span className="mt-0.5 inline-flex items-center gap-1 max-w-full text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
+                        <MdLocalOffer className="shrink-0" />
+                        <span className="truncate">
+                          {existing.length === 1 ? offerLabel(existing[0]) : `${existing.length} offers`}
+                        </span>
+                      </span>
+                    )}
                   </span>
                   {active && (
                     <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#c8a24a] text-white flex items-center justify-center text-sm shadow">
@@ -350,8 +493,8 @@ const DiscountForm = ({ categories, products, initial, isEdit, onSubmit, onBack,
 
         {form.scope === "products" && (
           <div className="mt-5 rounded-2xl border border-gray-200 bg-gray-50/60 p-4">
-            {!form.category ? (
-              <p className="text-sm text-gray-500 py-6 text-center">Choose a category above to see its products.</p>
+            {!form.categories.length ? (
+              <p className="text-sm text-gray-500 py-6 text-center">Choose categories above to see their products.</p>
             ) : (
               <>
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
@@ -399,6 +542,7 @@ const DiscountForm = ({ categories, products, initial, isEdit, onSubmit, onBack,
                       const id = idOf(p);
                       const picked = id in form.selected;
                       const on = !!form.selected[id];
+                      const { clash, same } = offersOn(p);
                       return (
                         <div
                           key={id}
@@ -412,8 +556,13 @@ const DiscountForm = ({ categories, products, initial, isEdit, onSubmit, onBack,
                               toggleProduct(id);
                             }
                           }}
+                          title={clash.length ? `Already on offer: ${clash.map(offerNote).join("; ")}` : undefined}
                           className={`flex items-center gap-3 p-2 rounded-xl border cursor-pointer transition-colors ${
-                            picked ? "border-[#c8a24a] bg-white shadow-sm" : "border-transparent bg-white/70 hover:bg-white"
+                            clash.length
+                              ? "border-amber-400 bg-amber-50 shadow-sm"
+                              : picked
+                                ? "border-[#c8a24a] bg-white shadow-sm"
+                                : "border-transparent bg-white/70 hover:bg-white"
                           }`}
                         >
                           <span
@@ -446,6 +595,17 @@ const DiscountForm = ({ categories, products, initial, isEdit, onSubmit, onBack,
                                 rupees(p.sellingPrice)
                               )}
                             </span>
+                            {clash.length > 0 && (
+                              <span className="flex items-center gap-1 text-[11px] font-semibold text-amber-800 truncate">
+                                <MdWarningAmber className="shrink-0" />
+                                <span className="truncate">Already {clash.map(offerNote).join("; ")}</span>
+                              </span>
+                            )}
+                            {!clash.length && same.length > 0 && (
+                              <span className="block text-[11px] text-emerald-700 truncate">
+                                Same offer in {same.map((d) => d.title).join(", ")}
+                              </span>
+                            )}
                           </span>
                           {picked && (
                             <span className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
@@ -551,11 +711,33 @@ const DiscountForm = ({ categories, products, initial, isEdit, onSubmit, onBack,
               <p className="text-sm text-gray-500">
                 {coveredProducts.length
                   ? "Enter a discount to see the new prices."
-                  : "Choose a category and products to see the new prices."}
+                  : "Choose categories and products to see the new prices."}
               </p>
             )}
           </div>
         </div>
+
+        {/* Products another offer already prices differently */}
+        {clashing.length > 0 && (
+          <div className="mt-4 rounded-2xl border border-amber-300 bg-amber-50 p-4 max-w-3xl">
+            <p className="flex items-center gap-2 font-semibold text-amber-900 text-sm">
+              <MdWarningAmber className="text-lg" />
+              {clashing.length} product{clashing.length === 1 ? " already has" : "s already have"} a different offer
+            </p>
+            <p className="text-xs text-amber-800 mt-1">
+              These are in another category that is on offer. A different discount is allowed, but the customer only
+              gets the lower price. Give the same discount to keep them consistent, or leave them out.
+            </p>
+            <ul className="mt-2 space-y-1 max-h-40 overflow-y-auto pr-1">
+              {clashing.map(({ p, clash }) => (
+                <li key={idOf(p)} className="text-xs text-[#1d2532]">
+                  <span className="font-semibold">{p.name}</span>
+                  <span className="text-amber-800"> — {clash.map(offerNote).join("; ")}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </Step>
 
       {/* 5. Dates */}
@@ -665,6 +847,23 @@ const DiscountForm = ({ categories, products, initial, isEdit, onSubmit, onBack,
           <MdSave /> {saving ? "Saving..." : isEdit ? "Update offer" : "Save offer"}
         </button>
       </div>
+
+      {confirmClash && (
+        <ConfirmModal
+          title="Products already on offer"
+          text={`${confirmClash.length} product${
+            confirmClash.length === 1 ? " is" : "s are"
+          } already on a different offer through another category (e.g. ${confirmClash
+            .slice(0, 3)
+            .map((x) => x.p.name)
+            .join(", ")}). The customer gets the lower price. Save anyway?`}
+          confirmLabel="Save anyway"
+          cancelLabel="Go back"
+          confirmColor="#b45309"
+          onCancel={() => setConfirmClash(null)}
+          onConfirm={save}
+        />
+      )}
     </form>
   );
 };
