@@ -37,6 +37,7 @@ import Discounts from "./componants/Discounts/Discounts";
 import Reviews from "./componants/Reviews/Reviews";
 import Delivery from "./componants/Delivery/Delivery";
 import MultiCategory from "./componants/MultiCategory/MultiCategory";
+import SeoSettings from "./componants/Seo/SeoSettings";
 
 const Home = lazy(() => import("./componants/Home/Home"));
 const Profile = lazy(() => import("./componants/Profile/Profile"));
@@ -145,6 +146,7 @@ const AuthenticatedApp = ({ isOpen, toggleSidenav }) => {
           <Route path="/products" element={<Products />} />
           <Route path="/collections" element={<Collections />} />
           <Route path="/multi-category" element={<MultiCategory />} />
+          <Route path="/seo-settings" element={<SeoSettings />} />
           {/* <Route path="/blogs" element={<Blogs />} /> */}
 
           <Route path="/terms-conditions" element={<Terms />} />

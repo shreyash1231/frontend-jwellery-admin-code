@@ -101,6 +101,14 @@ export const updateMarqueeApi = async (data) => {
   return http.put(`${endpoints.updateMarquee}`, data);
 };
 
+export const getSeoSettingsApi = async () => {
+  return http.get(`${endpoints.getSeoSettings}`);
+};
+
+export const updateSeoSettingsApi = async (data) => {
+  return http.put(`${endpoints.updateSeoSettings}`, data);
+};
+
 export const getSiteSettingsApi = async () => {
   return http.get(`${endpoints.getSiteSettings}`);
 };

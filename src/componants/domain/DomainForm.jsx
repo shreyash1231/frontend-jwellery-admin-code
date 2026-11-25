@@ -5,6 +5,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import { useToast } from "../toast/Toast";
 import { image_url } from "../../common/env";
+import SeoFields, { validateSeo } from "../Seo/SeoFields";
+
+const EMPTY_SEO = { slug: "", metaTitle: "", metaDescription: "", metaKeywords: "" };
+const SEO_INPUT =
+  "w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-[#1d2532] placeholder-gray-400 focus:outline-none focus:border-[#c8a24a] focus:ring-2 focus:ring-[#c8a24a]/20 transition";
 
 // parentCategory may come back populated ({ _id, name }) or as a plain id
 export const getParentId = (item) =>
@@ -49,6 +54,7 @@ const DomainForm = ({
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [seo, setSeo] = useState(EMPTY_SEO);
   const message = useToast();
 
   // ================= INITIAL DATA =================
@@ -68,6 +74,12 @@ const DomainForm = ({
         isShopByProduct: initialDomain?.isShopByProduct || false,
         parentCategory: getParentId(initialDomain),
       });
+      setSeo({
+        slug: initialDomain?.slug || "",
+        metaTitle: initialDomain?.metaTitle || "",
+        metaDescription: initialDomain?.metaDescription || "",
+        metaKeywords: initialDomain?.metaKeywords || "",
+      });
 
       const img =
         initialDomain?.image ||
@@ -82,6 +94,7 @@ const DomainForm = ({
       setLogoFile(null);
     } else {
       setForm({ name: "", description: "", isShopByProduct: false, parentCategory: "" });
+      setSeo(EMPTY_SEO);
       setImagePreview("");
       setImageFile(null);
       setLogoPreview("");
@@ -129,6 +142,12 @@ const DomainForm = ({
       return;
     }
 
+    const seoError = validateSeo(seo);
+    if (seoError) {
+      message.error(seoError);
+      return;
+    }
+
     try {
       setSubmitting(true);
 
@@ -138,6 +157,9 @@ const DomainForm = ({
       fd.append("isShopByProduct", form.isShopByProduct);
       // empty string = top-level category (backend stores it as null)
       fd.append("parentCategory", form.parentCategory);
+
+      // SEO: always sent, so clearing a field saves it as empty (= automatic)
+      Object.entries(seo).forEach(([key, value]) => fd.append(key, value.trim()));
 
       if (imageFile) fd.append("image", imageFile);
       if (logoFile) fd.append("logo", logoFile);
@@ -343,6 +365,22 @@ const DomainForm = ({
             >
               Shop By Product
             </label>
+          </div>
+
+          {/* ================= SEO ================= */}
+          <div className="rounded-2xl border border-gray-200 bg-[#f6f7f9] p-4">
+            <p className="font-semibold text-[#1d2532]">SEO (Google & sharing)</p>
+            <p className="text-xs text-gray-500 mb-4">
+              Optional. Empty fields are filled automatically from the category name and description.
+            </p>
+            <SeoFields
+              value={seo}
+              onChange={setSeo}
+              name={form.name}
+              description={form.description}
+              basePath="/categories/"
+              inputCls={SEO_INPUT}
+            />
           </div>
         </div>
 

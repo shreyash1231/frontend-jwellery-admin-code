@@ -25,6 +25,9 @@ import {
 import { errorResponseHandler } from "../../common/http";
 import { useToast } from "../toast/Toast";
 import { image_url } from "../../common/env";
+import SeoFields, { validateSeo, slugify, LockButton, lockedCls } from "../Seo/SeoFields";
+
+const EMPTY_SEO = { slug: "", metaTitle: "", metaDescription: "", metaKeywords: "" };
 
 const INPUT_CLS =
   "w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-[#1d2532] placeholder-gray-400 focus:outline-none focus:border-[#c8a24a] focus:ring-2 focus:ring-[#c8a24a]/20 transition";
@@ -90,6 +93,13 @@ const ProductForm = ({ onClose, onSaved, mode = "add", initial = null }) => {
   const [existingImages, setExistingImages] = useState([]);
   const [showFaq, setShowFaq] = useState(false);
   const [faqs, setFaqs] = useState([{ question: "", answer: "" }]);
+  const [seo, setSeo] = useState(EMPTY_SEO);
+  const [tags, setTags] = useState([]);
+  // The slug follows the product name until the admin types their own slug
+  const [slugLinked, setSlugLinked] = useState(true);
+  // Edit mode: the name is read-only until its Edit button is clicked
+  const [nameUnlocked, setNameUnlocked] = useState(false);
+  const nameLocked = mode === "edit" && !nameUnlocked;
 
   // Optional (extra) categories: the product also shows in these, besides its main category.
   // Same data as the Multi Category page.
@@ -199,6 +209,14 @@ const ProductForm = ({ onClose, onSaved, mode = "add", initial = null }) => {
         setExistingImages(initial.imageUrl);
       }
 
+      setSeo({
+        slug: initial?.slug || "",
+        metaTitle: initial?.metaTitle || "",
+        metaDescription: initial?.metaDescription || "",
+        metaKeywords: initial?.metaKeywords || "",
+      });
+      setTags(Array.isArray(initial?.tags) ? initial.tags : []);
+
       // ✅ LOAD FAQs
       if (Array.isArray(initial?.faqs) && initial.faqs.length > 0) {
         setFaqs(initial.faqs);
@@ -210,6 +228,10 @@ const ProductForm = ({ onClose, onSaved, mode = "add", initial = null }) => {
   /* ================= HANDLERS ================= */
 const handleChange = (e) => {
   const { name, value, type, checked } = e.target;
+
+  if (name === "name" && slugLinked) {
+    setSeo((s) => ({ ...s, slug: slugify(value) }));
+  }
 
   setForm((prev) => ({
     ...prev,
@@ -326,6 +348,12 @@ const handleChange = (e) => {
       return;
     }
 
+    const seoError = validateSeo(seo);
+    if (seoError) {
+      message.error(seoError);
+      return;
+    }
+
     if (showFaq) {
       if (faqs.length > 10) {
         message.error("Maximum 10 FAQs are allowed");
@@ -350,6 +378,10 @@ const handleChange = (e) => {
           fd.append(key, typeof value === "string" ? value.trim() : value);
         }
       });
+
+      // SEO: always sent, so clearing a field saves it as empty (= automatic)
+      Object.entries(seo).forEach(([key, value]) => fd.append(key, value.trim()));
+      fd.append("tags", JSON.stringify(tags));
 
       if (showFaq && faqs.length > 0) {
         const cleanedFaqs = faqs.map((faq) => ({
@@ -447,15 +479,45 @@ const handleChange = (e) => {
           <Section n={1} title="Basic details" hint="Name, price and stock">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
-                <Label required>Product Name</Label>
+                <Label
+                  required
+                  extra={
+                    <span className="flex items-center gap-2">
+                      <Counter value={form.name || ""} max={100} />
+                      {mode === "edit" && (
+                        <LockButton
+                          locked={nameLocked}
+                          changed={form.name !== (initial?.name || "")}
+                          onEdit={() => setNameUnlocked(true)}
+                          onLock={() => setNameUnlocked(false)}
+                          onCancel={() => {
+                            setForm((f) => ({ ...f, name: initial?.name || "" }));
+                            if (slugLinked) setSeo((s) => ({ ...s, slug: initial?.slug || "" }));
+                            setNameUnlocked(false);
+                          }}
+                        />
+                      )}
+                    </span>
+                  }
+                >
+                  Product Name
+                </Label>
                 <input
                   type="text"
                   name="name"
                   value={form.name}
                   onChange={handleChange}
+                  readOnly={nameLocked}
+                  maxLength={100}
                   placeholder="e.g. Kundan bridal choker"
-                  className={INPUT_CLS}
+                  className={`${INPUT_CLS} ${nameLocked ? lockedCls : ""}`}
                 />
+                {!nameLocked && slugLinked && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    URL: /product/<span className="text-[#8a6a1f] font-medium">{seo.slug || slugify(form.name) || "…"}</span>{" "}
+                    (updates as you type)
+                  </p>
+                )}
               </div>
               <div>
                 <Label>MRP (Cut Price)</Label>
@@ -896,6 +958,33 @@ const handleChange = (e) => {
             ) : (
               <p className="text-sm text-gray-400">No FAQs for this product.</p>
             )}
+          </Section>
+
+          {/* 6. SEO */}
+          <Section
+            n={6}
+            title="SEO (Google & sharing)"
+            hint="Optional. Empty fields are filled automatically from the product name and description."
+          >
+            <SeoFields
+              value={seo}
+              onChange={setSeo}
+              name={form.name}
+              description={form.description}
+              basePath="/product/"
+              inputCls={INPUT_CLS}
+              lockable={mode === "edit"}
+              saved={{
+                slug: initial?.slug || "",
+                metaTitle: initial?.metaTitle || "",
+                metaDescription: initial?.metaDescription || "",
+                metaKeywords: initial?.metaKeywords || "",
+              }}
+              slugLinked={slugLinked}
+              onSlugLinkedChange={setSlugLinked}
+              tags={tags}
+              onTagsChange={setTags}
+            />
           </Section>
         </div>
 

@@ -42,6 +42,9 @@ const endpoints = {
   getMarquee:"get-marquee",
   updateMarquee:"update-marquee",
 
+  getSeoSettings:"get-seo-settings",
+  updateSeoSettings:"update-seo-settings",
+
   getSiteSettings:"get-site-settings",
   updateSiteSettings:"update-site-settings",
 

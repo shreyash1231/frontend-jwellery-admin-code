@@ -23,6 +23,7 @@ import {
   MdGavel,
   MdPolicy,
   MdLocalShipping,
+  MdTravelExplore,
   MdSwapHoriz,
   MdLogout,
   MdDiscount,
@@ -74,6 +75,7 @@ const MENU = [
     items: [
       { to: "/banners", label: "Banners", icon: MdViewCarousel },
       { to: "/reels", label: "Reels", icon: MdVideoLibrary },
+      { to: "/seo-settings", label: "SEO Settings", icon: MdTravelExplore },
     ],
   },
   {

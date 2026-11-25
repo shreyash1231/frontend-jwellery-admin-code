@@ -19,6 +19,10 @@ import {
 import { image_url } from "../../common/env";
 import { useToast } from "../toast/Toast";
 import HomePlacementPicker, { DEFAULT_PLACEMENT } from "./HomePlacementPicker";
+import SeoFields, { validateSeo, slugify } from "../Seo/SeoFields";
+
+const SEO_INPUT =
+  "w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-[#1d2532] placeholder-gray-400 focus:outline-none focus:border-[#c8a24a] focus:ring-2 focus:ring-[#c8a24a]/20 transition";
 
 const idOf = (x) => x?._id || x?.id || x;
 
@@ -60,6 +64,13 @@ const buildState = (initial, productsByCat) => {
     selected,
     placement: initial?.placement || DEFAULT_PLACEMENT,
     isActive: initial?.isActive !== false,
+    description: initial?.description || "",
+    seo: {
+      slug: initial?.slug || "",
+      metaTitle: initial?.metaTitle || "",
+      metaDescription: initial?.metaDescription || "",
+      metaKeywords: initial?.metaKeywords || "",
+    },
   };
 };
 
@@ -167,6 +178,10 @@ const CollectionForm = ({ categories, products, collections = [], initial, isEdi
   const [selected, setSelected] = useState(initialState.selected);
   const [placement, setPlacement] = useState(initialState.placement);
   const [isActive, setIsActive] = useState(initialState.isActive);
+  const [description, setDescription] = useState(initialState.description);
+  const [seo, setSeo] = useState(initialState.seo);
+  // The slug follows the title until the admin types their own slug
+  const [slugLinked, setSlugLinked] = useState(true);
   const [openCats, setOpenCats] = useState({});
   const [catSearch, setCatSearch] = useState("");
   const [drag, setDrag] = useState(null); // { catId, index }
@@ -182,6 +197,9 @@ const CollectionForm = ({ categories, products, collections = [], initial, isEdi
     setSelected(initialState.selected);
     setPlacement(initialState.placement);
     setIsActive(initialState.isActive);
+    setDescription(initialState.description);
+    setSeo(initialState.seo);
+    setSlugLinked(true);
     setOpenCats({});
   };
 
@@ -250,6 +268,8 @@ const CollectionForm = ({ categories, products, collections = [], initial, isEdi
     })),
     placement,
     isActive,
+    description: description.trim(),
+    ...Object.fromEntries(Object.entries(seo).map(([k, v]) => [k, v.trim()])),
   });
 
   // What would be saved if nothing were touched; anything different is an unsaved change
@@ -262,6 +282,8 @@ const CollectionForm = ({ categories, products, collections = [], initial, isEdi
       })),
       placement: initialState.placement,
       isActive: initialState.isActive,
+      description: initialState.description.trim(),
+      ...Object.fromEntries(Object.entries(initialState.seo).map(([k, v]) => [k, v.trim()])),
     }),
     [initialState],
   );
@@ -284,6 +306,11 @@ const CollectionForm = ({ categories, products, collections = [], initial, isEdi
     if (empty) {
       const name = categories.find((c) => idOf(c) === empty.category)?.name || "a category";
       message.error(`Select at least one product in "${name}"`);
+      return;
+    }
+    const seoError = validateSeo(seo);
+    if (seoError) {
+      message.error(seoError);
       return;
     }
     setConfirmMode(mode);
@@ -324,7 +351,10 @@ const CollectionForm = ({ categories, products, collections = [], initial, isEdi
               ref={titleRef}
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (slugLinked) setSeo((s) => ({ ...s, slug: slugify(e.target.value) }));
+              }}
               disabled={!titleEditable}
               maxLength={100}
               placeholder="e.g. Wedding Gifts, Bridesmaid, Home Decor, Under ₹1,000"
@@ -337,6 +367,20 @@ const CollectionForm = ({ categories, products, collections = [], initial, isEdi
               {title.length}/100
             </span>
           </div>
+          {isEdit && titleEditable && title !== initialState.title && (
+            <button
+              type="button"
+              onClick={() => {
+                setTitle(initialState.title);
+                if (slugLinked) setSeo((s) => ({ ...s, slug: initialState.seo.slug }));
+                setTitleEditable(false);
+              }}
+              title="Put back the saved title"
+              className="px-4 rounded-xl border border-gray-300 bg-white flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-red-600"
+            >
+              <MdClose className="text-lg" /> Cancel
+            </button>
+          )}
           {isEdit && (
             <button
               type="button"
@@ -353,6 +397,11 @@ const CollectionForm = ({ categories, products, collections = [], initial, isEdi
             </button>
           )}
         </div>
+        {titleEditable && slugLinked && (
+          <p className="text-xs text-gray-500 mt-1.5">
+            URL: /collections/<span className="text-[#8a6a1f] font-medium">{seo.slug || slugify(title) || "…"}</span> (updates as you type)
+          </p>
+        )}
       </Step>
 
       {/* Step 2: categories */}
@@ -659,6 +708,45 @@ const CollectionForm = ({ categories, products, collections = [], initial, isEdi
           onActiveChange={setIsActive}
           title={title}
           others={collections.filter((c) => idOf(c) !== idOf(initial))}
+        />
+      </Step>
+
+      {/* Step 5: SEO */}
+      <Step
+        n={5}
+        title="SEO (Google & sharing)"
+        hint="Optional. Empty fields are filled automatically from the title and intro text."
+      >
+        <div className="mb-4">
+          <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+            <span>Intro text</span>
+            <span className={`normal-case font-normal ${description.length > 1000 ? "text-red-600" : "text-gray-400"}`}>
+              {description.length}/1000
+            </span>
+          </div>
+          <textarea
+            rows={3}
+            maxLength={1000}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="A short paragraph shown under the collection heading, e.g. Handpicked wedding gifts for the bride, groom and family…"
+            className={`${SEO_INPUT} resize-y`}
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Shown on the collection page. Google reads it too, so 2–3 sentences with words people search for help.
+          </p>
+        </div>
+        <SeoFields
+          value={seo}
+          onChange={setSeo}
+          name={title}
+          description={description}
+          basePath="/collections/"
+          inputCls={SEO_INPUT}
+          lockable={isEdit}
+          saved={initialState.seo}
+          slugLinked={slugLinked}
+          onSlugLinkedChange={setSlugLinked}
         />
       </Step>
 
