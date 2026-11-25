@@ -192,6 +192,16 @@ export const deleteProductCategoriesApi = async (productId) => {
   return http.delete(`${endpoints.deleteProductCategories}/${productId}`);
 };
 
+// Product Order: products of a category in website display order
+export const getCategoryProductOrderApi = async (categoryId) => {
+  return http.get(`${endpoints.getCategoryProductOrder}/${categoryId}`);
+};
+
+// products: every product id in the new order; [] resets to newest first
+export const saveCategoryProductOrderApi = async (categoryId, products) => {
+  return http.put(`${endpoints.saveCategoryProductOrder}/${categoryId}`, { products });
+};
+
 // The backend pages 40 products at a time by default; the collection picker needs all of them
 export const getAllProductsForPickerApi = async () => {
   return http.get(`${endpoints.getAllProjects}?limit=1000`);

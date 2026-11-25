@@ -70,6 +70,9 @@ const endpoints = {
   deleteProductCategory:"delete-product-category",
   deleteProductCategories:"delete-product-categories",
 
+  getCategoryProductOrder:"get-category-product-order",
+  saveCategoryProductOrder:"save-category-product-order",
+
 
 
 

@@ -30,6 +30,7 @@ import {
   MdExpandMore,
   MdRateReview,
   MdAccountTree,
+  MdLowPriority,
 } from "react-icons/md";
 import Loader from "../Loader/Loader";
 import { errorResponseHandler } from "../../common/http";
@@ -66,6 +67,7 @@ const MENU = [
       { to: "/products", label: "Products", icon: MdDiamond },
       { to: "/domains", label: "Category", icon: MdCategory },
       { to: "/multi-category", label: "Multi Category", icon: MdAccountTree },
+      { to: "/product-order", label: "Product Order", icon: MdLowPriority },
       { to: "/collections", label: "Collections", icon: MdCollectionsBookmark },
       { to: "/reviews", label: "Reviews", icon: MdRateReview },
     ],
